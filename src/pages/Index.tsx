@@ -4,6 +4,7 @@ import PlatformOverview from "@/components/landing/PlatformOverview";
 import Services from "@/components/landing/Services";
 import Stats from "@/components/landing/Stats";
 import Team from "@/components/landing/Team";
+import Pricing from "@/components/landing/Pricing";
 import FAQ from "@/components/landing/FAQ";
 import Testimonials from "@/components/landing/Testimonials";
 import Footer from "@/components/landing/Footer";
@@ -18,6 +19,7 @@ const Index = () => {
         <Services />
         <Stats />
         <Team />
+        <Pricing />
         <FAQ />
         <Testimonials />
       </main>
