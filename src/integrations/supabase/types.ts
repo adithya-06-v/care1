@@ -26,6 +26,7 @@ export type Database = {
           onboarding_completed: boolean | null
           preferred_language: string | null
           therapy_sessions_completed: number | null
+          total_practice_minutes: number | null
           updated_at: string
           user_id: string
         }
@@ -40,6 +41,7 @@ export type Database = {
           onboarding_completed?: boolean | null
           preferred_language?: string | null
           therapy_sessions_completed?: number | null
+          total_practice_minutes?: number | null
           updated_at?: string
           user_id: string
         }
@@ -54,7 +56,38 @@ export type Database = {
           onboarding_completed?: boolean | null
           preferred_language?: string | null
           therapy_sessions_completed?: number | null
+          total_practice_minutes?: number | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      sessions: {
+        Row: {
+          accuracy_score: number | null
+          created_at: string
+          duration_minutes: number
+          exercises_completed: number
+          id: string
+          total_exercises: number
+          user_id: string
+        }
+        Insert: {
+          accuracy_score?: number | null
+          created_at?: string
+          duration_minutes: number
+          exercises_completed?: number
+          id?: string
+          total_exercises?: number
+          user_id: string
+        }
+        Update: {
+          accuracy_score?: number | null
+          created_at?: string
+          duration_minutes?: number
+          exercises_completed?: number
+          id?: string
+          total_exercises?: number
           user_id?: string
         }
         Relationships: []
