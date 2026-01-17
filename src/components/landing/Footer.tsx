@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Facebook, Twitter, Instagram, Linkedin, Youtube, ArrowRight } from "lucide-react";
+import { SocialLinks } from "@/components/ui/social-links";
+import { ArrowRight } from "lucide-react";
 
 const footerLinks = {
   about: [
@@ -30,11 +31,10 @@ const footerLinks = {
 };
 
 const socialLinks = [
-  { icon: Facebook, href: "#", label: "Facebook" },
-  { icon: Twitter, href: "#", label: "Twitter" },
-  { icon: Instagram, href: "#", label: "Instagram" },
-  { icon: Linkedin, href: "#", label: "LinkedIn" },
-  { icon: Youtube, href: "#", label: "YouTube" },
+  { name: "Instagram", image: "https://link-hover-lndev.vercel.app/instagram.png" },
+  { name: "LinkedIn", image: "https://link-hover-lndev.vercel.app/linkedin.png" },
+  { name: "Twitter", image: "https://link-hover-lndev.vercel.app/x.png" },
+  { name: "Facebook", image: "https://link-hover-lndev.vercel.app/facebook.png" },
 ];
 
 const Footer = () => {
@@ -51,10 +51,15 @@ const Footer = () => {
               </div>
               <span className="text-2xl font-bold">CareVoice</span>
             </div>
-            <p className="text-white/70 mb-8 max-w-md">
+            <p className="text-white/70 mb-4 max-w-md">
               Empowering voices through AI-driven speech therapy. 
               Join thousands who have transformed their communication journey.
             </p>
+            
+            {/* Social Links with hover effect */}
+            <div className="mb-8">
+              <SocialLinks socials={socialLinks} className="gap-3" />
+            </div>
             
             {/* Newsletter */}
             <div>
@@ -131,19 +136,8 @@ const Footer = () => {
             © 2024 CareVoice. All rights reserved.
           </p>
           
-          {/* Social Links */}
-          <div className="flex items-center gap-4">
-            {socialLinks.map((social) => (
-              <a
-                key={social.label}
-                href={social.href}
-                aria-label={social.label}
-                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
-              >
-                <social.icon className="w-5 h-5" />
-              </a>
-            ))}
-          </div>
+          {/* Bottom Social Links - text style matching top */}
+          <SocialLinks socials={socialLinks} className="gap-4" />
         </div>
       </div>
     </footer>
