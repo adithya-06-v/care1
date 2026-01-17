@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,10 +15,12 @@ import {
   Clock,
   Target,
   User,
-  Flame
+  Flame,
+  Plus
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { RecommendedSession } from '@/components/dashboard/RecommendedSession';
+import { LanguageDialog } from '@/components/dashboard/LanguageDialog';
 
 interface Profile {
   full_name: string | null;
@@ -43,6 +45,8 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [selectedLanguage, setSelectedLanguage] = useState('English');
   const [sessionDuration, setSessionDuration] = useState('');
+  const [languageDialogOpen, setLanguageDialogOpen] = useState(false);
+  const languageSectionRef = useRef<HTMLDivElement>(null);
   const [sessionStats, setSessionStats] = useState<SessionStats>({
     totalSessions: 0,
     totalMinutes: 0,
@@ -145,7 +149,7 @@ const Dashboard = () => {
     return mins > 0 ? `${hours}h ${mins}m` : `${hours} hrs`;
   };
 
-  const languages = ['English', 'Spanish', 'French', 'German', 'Mandarin', 'Hindi'];
+  const quickLanguages = ['English', 'Hindi', 'Bengali', 'Tamil', 'Telugu', 'Marathi'];
 
   if (loading) {
     return (
@@ -269,7 +273,7 @@ const Dashboard = () => {
         {/* Main Actions */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Language Selection */}
-          <Card className="bg-card border-border shadow-card">
+          <Card className="bg-card border-border shadow-card" ref={languageSectionRef}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-foreground">
                 <Globe className="w-5 h-5 text-primary" />
@@ -279,7 +283,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {languages.map((lang) => (
+                {quickLanguages.map((lang) => (
                   <Button
                     key={lang}
                     variant={selectedLanguage === lang ? 'default' : 'outline'}
@@ -294,6 +298,15 @@ const Dashboard = () => {
                   </Button>
                 ))}
               </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full mt-3 text-primary hover:text-primary"
+                onClick={() => setLanguageDialogOpen(true)}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                More Languages (40+)
+              </Button>
             </CardContent>
           </Card>
 
@@ -382,7 +395,7 @@ const Dashboard = () => {
 
             <Card 
               className="bg-card border-border shadow-card hover:shadow-card-hover transition-all cursor-pointer group"
-              onClick={() => window.scrollTo({ top: document.querySelector('.grid.grid-cols-2.sm\\:grid-cols-3')?.getBoundingClientRect().top, behavior: 'smooth' })}
+              onClick={() => setLanguageDialogOpen(true)}
             >
               <CardContent className="p-6 text-center">
                 <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3 group-hover:bg-muted/80 transition-colors">
@@ -395,6 +408,17 @@ const Dashboard = () => {
           </div>
         </div>
       </main>
+
+      {/* Language Dialog */}
+      {user && (
+        <LanguageDialog
+          open={languageDialogOpen}
+          onOpenChange={setLanguageDialogOpen}
+          selectedLanguage={selectedLanguage}
+          onLanguageChange={setSelectedLanguage}
+          userId={user.id}
+        />
+      )}
     </div>
   );
 };
