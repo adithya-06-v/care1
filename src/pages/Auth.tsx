@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
 import { z } from 'zod';
@@ -23,9 +24,24 @@ const Auth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && user) {
-      navigate('/dashboard');
-    }
+    const checkOnboardingStatus = async () => {
+      if (!loading && user) {
+        // Check if user has completed onboarding
+        const { data } = await supabase
+          .from('profiles')
+          .select('onboarding_completed')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (data?.onboarding_completed) {
+          navigate('/dashboard');
+        } else {
+          navigate('/onboarding');
+        }
+      }
+    };
+
+    checkOnboardingStatus();
   }, [user, loading, navigate]);
 
   const validateForm = () => {
@@ -75,7 +91,7 @@ const Auth = () => {
             title: 'Welcome back!',
             description: 'You have successfully logged in.',
           });
-          navigate('/dashboard');
+          // Redirect handled by useEffect after checking onboarding
         }
       } else {
         const { error } = await signUp(email, password, fullName);
@@ -90,9 +106,9 @@ const Auth = () => {
         } else {
           toast({
             title: 'Account Created!',
-            description: 'Welcome to CareVoice! Redirecting to your dashboard...',
+            description: 'Welcome to CareVoice! Let\'s set up your profile...',
           });
-          navigate('/dashboard');
+          // Redirect to onboarding handled by useEffect
         }
       }
     } catch (err) {
