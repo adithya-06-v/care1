@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Mic, Globe, Clock, ShieldCheck } from "lucide-react";
@@ -9,6 +10,7 @@ const floatingFeatures = [
 ];
 
 const Hero = () => {
+  const navigate = useNavigate();
   return (
     <section className="relative gradient-hero overflow-hidden pt-24 lg:pt-32 pb-16 lg:pb-24">
       {/* Background decorative elements */}
@@ -42,6 +44,7 @@ const Hero = () => {
               <Button 
                 size="lg" 
                 className="rounded-pill px-8 py-6 text-lg bg-white text-primary hover:bg-white/90 shadow-button"
+                onClick={() => navigate('/auth')}
               >
                 Start Your Voice Journey
               </Button>
