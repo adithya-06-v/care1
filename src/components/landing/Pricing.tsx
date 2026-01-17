@@ -18,6 +18,7 @@ interface Tier {
   highlight?: boolean
   badge?: string
   features: Feature[]
+  image: string
 }
 
 const tiers: Tier[] = [
@@ -25,6 +26,7 @@ const tiers: Tier[] = [
     name: "Starter",
     price: { monthly: 0, yearly: 0 },
     description: "Free plan for basic AI speech therapy practice",
+    image: "https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=400&h=250&fit=crop",
     features: [
       { name: "Basic Pronunciation Practice", description: "AI feedback for simple words", included: true },
       { name: "5 Daily Sessions", description: "Limited therapy exercises per day", included: true },
@@ -38,6 +40,7 @@ const tiers: Tier[] = [
     description: "Advanced AI therapy with personalized learning",
     highlight: true,
     badge: "Recommended",
+    image: "https://images.unsplash.com/photo-1551434678-e076c223a692?w=400&h=250&fit=crop",
     features: [
       { name: "Unlimited Therapy", description: "Practice without limits", included: true },
       { name: "Real-Time Correction", description: "Instant AI feedback", included: true },
@@ -49,6 +52,7 @@ const tiers: Tier[] = [
 
 const Pricing = () => {
   const [isYearly, setIsYearly] = useState(false)
+  const [hoveredTier, setHoveredTier] = useState<string | null>(null)
 
   return (
     <section id="pricing" className="py-16 lg:py-24 bg-background">
@@ -94,7 +98,22 @@ const Pricing = () => {
                   ? "border-primary bg-card shadow-card-hover scale-[1.02]" 
                   : "border-border bg-card shadow-card hover:shadow-card-hover"
               }`}
+              onMouseEnter={() => setHoveredTier(tier.name)}
+              onMouseLeave={() => setHoveredTier(null)}
             >
+              {/* Image with grayscale-to-color hover effect */}
+              <div className="mb-6 overflow-hidden rounded-xl">
+                <img 
+                  src={tier.image} 
+                  alt={`${tier.name} plan`}
+                  className={`w-full h-40 object-cover transition-all duration-500 ${
+                    hoveredTier === tier.name 
+                      ? "grayscale-0 scale-105" 
+                      : "grayscale"
+                  }`}
+                />
+              </div>
+
               {/* Badge */}
               {tier.highlight && tier.badge && (
                 <Badge className="mb-4 bg-primary text-primary-foreground w-fit">
