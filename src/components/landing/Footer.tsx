@@ -31,10 +31,10 @@ const footerLinks = {
 };
 
 const socialLinks = [
-  { name: "Instagram", image: "https://link-hover-lndev.vercel.app/instagram.png" },
-  { name: "LinkedIn", image: "https://link-hover-lndev.vercel.app/linkedin.png" },
-  { name: "Twitter", image: "https://link-hover-lndev.vercel.app/x.png" },
-  { name: "Facebook", image: "https://link-hover-lndev.vercel.app/facebook.png" },
+  { name: "Instagram", image: "https://cdn-icons-png.flaticon.com/512/174/174855.png" },
+  { name: "LinkedIn", image: "https://cdn-icons-png.flaticon.com/512/174/174857.png" },
+  { name: "Twitter", image: "https://cdn-icons-png.flaticon.com/512/733/733579.png" },
+  { name: "Facebook", image: "https://cdn-icons-png.flaticon.com/512/174/174848.png" },
 ];
 
 const Footer = () => {
