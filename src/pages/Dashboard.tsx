@@ -12,7 +12,8 @@ import {
   Play, 
   Trophy,
   Clock,
-  Target
+  Target,
+  User
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
@@ -112,10 +113,20 @@ const Dashboard = () => {
             </div>
             <span className="text-xl font-bold text-foreground">CareVoice</span>
           </div>
-          <Button variant="ghost" onClick={handleSignOut} className="text-muted-foreground hover:text-foreground">
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate('/profile')}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <User className="w-4 h-4 mr-2" />
+              Profile
+            </Button>
+            <Button variant="ghost" onClick={handleSignOut} className="text-muted-foreground hover:text-foreground">
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         </div>
       </header>
 
