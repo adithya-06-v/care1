@@ -6,7 +6,7 @@ const navLinks = [
   { name: "Services", href: "#services" },
   { name: "How It Works", href: "#how-it-works" },
   { name: "Pricing", href: "#pricing" },
-  { name: "Resources", href: "#resources" },
+  { name: "Resources", href: "#faq" },
 ];
 
 const Navbar = () => {
@@ -17,32 +17,34 @@ const Navbar = () => {
       <div className="container mx-auto px-4 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
-          <a href="/" className="flex items-center gap-2">
+          <a href="/" className="flex items-center gap-2 flex-shrink-0">
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-sm">CV</span>
             </div>
             <span className="text-xl font-bold text-foreground">CareVoice</span>
           </a>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="text-muted-foreground hover:text-foreground transition-colors text-body font-medium"
-              >
-                {link.name}
-              </a>
-            ))}
+          {/* Center Navigation - Desktop */}
+          <div className="hidden lg:flex items-center justify-center flex-1 px-8">
+            <div className="flex items-center gap-8">
+              {navLinks.map((link) => (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
+                >
+                  {link.name}
+                </a>
+              ))}
+            </div>
           </div>
 
-          {/* Desktop CTA */}
-          <div className="hidden lg:flex items-center gap-4">
-            <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+          {/* Right Buttons - Desktop */}
+          <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
+            <Button variant="ghost" className="text-muted-foreground hover:text-foreground font-medium">
               Login
             </Button>
-            <Button className="rounded-pill px-6 shadow-button hover:shadow-card-hover transition-all">
+            <Button className="rounded-full px-6 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all">
               Get Started
             </Button>
           </div>
@@ -65,7 +67,7 @@ const Navbar = () => {
                 <a
                   key={link.name}
                   href={link.href}
-                  className="text-muted-foreground hover:text-foreground transition-colors py-2 text-body font-medium"
+                  className="text-muted-foreground hover:text-foreground transition-colors py-2 text-sm font-medium"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {link.name}
@@ -75,7 +77,7 @@ const Navbar = () => {
                 <Button variant="ghost" className="justify-start text-muted-foreground">
                   Login
                 </Button>
-                <Button className="rounded-pill shadow-button">
+                <Button className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
                   Get Started
                 </Button>
               </div>
