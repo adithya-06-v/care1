@@ -15,13 +15,15 @@ import {
   Play,
   X,
   Volume2,
+  Loader2,
 } from 'lucide-react';
 import { generateExercises, getExerciseTypeName, getExerciseIcon, Exercise } from '@/lib/exerciseGenerator';
 import { useAudioRecorder } from '@/hooks/useAudioRecorder';
+import { useSpeechAnalysis, SpeechAnalysisResult } from '@/hooks/useSpeechAnalysis';
 import { RecordingButton } from '@/components/therapy/RecordingButton';
 import { AIFeedback } from '@/components/therapy/AIFeedback';
 import { SessionSummary } from '@/components/therapy/SessionSummary';
-import { generateAIFeedback, generateImprovementTips, extractWordsPracticed, FeedbackResult } from '@/lib/aiFeedbackGenerator';
+import { generateImprovementTips, extractWordsPracticed } from '@/lib/aiFeedbackGenerator';
 
 interface ProfileData {
   age_group: string | null;
@@ -52,9 +54,10 @@ const TherapySession = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [accuracyScores, setAccuracyScores] = useState<number[]>([]);
   const [showFeedback, setShowFeedback] = useState(false);
-  const [currentFeedback, setCurrentFeedback] = useState<FeedbackResult | null>(null);
+  const [currentFeedback, setCurrentFeedback] = useState<SpeechAnalysisResult | null>(null);
 
   const { isRecording, audioBlob, audioUrl, startRecording, stopRecording, resetRecording, recordingDuration } = useAudioRecorder();
+  const { isAnalyzing, analyzeSpeech, resetAnalysis } = useSpeechAnalysis();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -174,28 +177,35 @@ const TherapySession = () => {
     }
   }, [user, isComplete, duration, exercisesCompleted, exercises.length, accuracyScores, profile]);
 
-  const handleRecordingComplete = () => {
+  const handleRecordingComplete = async () => {
     if (audioBlob) {
       const currentExercise = exercises[currentExerciseIndex];
-      const feedback = generateAIFeedback(
-        currentExercise?.content || '',
-        currentExercise?.type || 'pronunciation',
-        profile?.difficulty || 'beginner',
-        profile?.goals || ['pronunciation']
-      );
-      setCurrentFeedback(feedback);
-      setShowFeedback(true);
+      const expectedText = currentExercise?.content || '';
+      
+      const result = await analyzeSpeech(audioBlob, expectedText);
+      
+      if (result) {
+        setCurrentFeedback(result);
+        setShowFeedback(true);
+      } else {
+        toast({
+          title: 'Analysis failed',
+          description: 'Could not analyze your speech. Please try again.',
+          variant: 'destructive',
+        });
+      }
     }
   };
 
   const handleFeedbackContinue = () => {
     if (currentFeedback) {
-      setAccuracyScores(prev => [...prev, currentFeedback.score]);
+      setAccuracyScores(prev => [...prev, currentFeedback.pronunciationScore]);
     }
     setExercisesCompleted(prev => prev + 1);
     setShowFeedback(false);
     setCurrentFeedback(null);
     resetRecording();
+    resetAnalysis();
 
     if (currentExerciseIndex < exercises.length - 1) {
       setCurrentExerciseIndex(prev => prev + 1);
@@ -208,6 +218,7 @@ const TherapySession = () => {
     setShowFeedback(false);
     setCurrentFeedback(null);
     resetRecording();
+    resetAnalysis();
   };
 
   const handleNextExercise = () => {
@@ -325,9 +336,10 @@ const TherapySession = () => {
               exit={{ opacity: 0, scale: 0.95 }}
             >
               <AIFeedback
-                score={currentFeedback.score}
+                score={currentFeedback.pronunciationScore}
                 mispronounced={currentFeedback.mispronounced}
-                suggestion={currentFeedback.suggestion}
+                suggestion={currentFeedback.feedbackMessage}
+                recognizedText={currentFeedback.recognizedText}
                 onTryAgain={handleTryAgain}
                 onContinue={handleFeedbackContinue}
               />
@@ -369,15 +381,22 @@ const TherapySession = () => {
                     </p>
                   </div>
 
-                  <RecordingButton
-                    isRecording={isRecording}
-                    hasRecording={!!audioBlob}
-                    audioUrl={audioUrl}
-                    duration={recordingDuration}
-                    onStartRecording={startRecording}
-                    onStopRecording={stopRecording}
-                    onResetRecording={resetRecording}
-                  />
+                  {isAnalyzing ? (
+                    <div className="flex flex-col items-center gap-3 py-4">
+                      <Loader2 className="w-10 h-10 text-primary animate-spin" />
+                      <p className="text-sm text-muted-foreground">Analyzing your speech...</p>
+                    </div>
+                  ) : (
+                    <RecordingButton
+                      isRecording={isRecording}
+                      hasRecording={!!audioBlob}
+                      audioUrl={audioUrl}
+                      duration={recordingDuration}
+                      onStartRecording={startRecording}
+                      onStopRecording={stopRecording}
+                      onResetRecording={resetRecording}
+                    />
+                  )}
                 </CardContent>
               </Card>
             </motion.div>
@@ -395,9 +414,15 @@ const TherapySession = () => {
               {isPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
             </Button>
 
-            <Button onClick={handleNextExercise} className="flex-1 max-w-[140px] shadow-button">
-              {audioBlob ? 'Submit' : currentExerciseIndex === exercises.length - 1 ? 'Complete' : 'Skip'}
-              <ArrowRight className="w-4 h-4 ml-2" />
+            <Button onClick={handleNextExercise} disabled={isAnalyzing} className="flex-1 max-w-[140px] shadow-button">
+              {isAnalyzing ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  {audioBlob ? 'Submit' : currentExerciseIndex === exercises.length - 1 ? 'Complete' : 'Skip'}
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </>
+              )}
             </Button>
           </div>
         )}
