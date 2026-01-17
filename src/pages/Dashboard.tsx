@@ -14,15 +14,27 @@ import {
   Trophy,
   Clock,
   Target,
-  User
+  User,
+  Flame
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { RecommendedSession } from '@/components/dashboard/RecommendedSession';
 
 interface Profile {
   full_name: string | null;
   preferred_language: string;
   therapy_sessions_completed: number;
   total_practice_minutes: number;
+  goals: string[] | null;
+  difficulty: string | null;
+  age_group: string | null;
+  current_streak: number;
+}
+
+interface SessionStats {
+  totalSessions: number;
+  totalMinutes: number;
+  averageAccuracy: number;
 }
 
 interface SessionStats {
@@ -70,12 +82,15 @@ const Dashboard = () => {
         // Fetch profile
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('full_name, preferred_language, therapy_sessions_completed, total_practice_minutes')
+          .select('full_name, preferred_language, therapy_sessions_completed, total_practice_minutes, goals, difficulty, age_group, current_streak')
           .eq('user_id', user.id)
           .maybeSingle();
         
         if (profileData && !profileError) {
-          setProfile(profileData);
+          setProfile({
+            ...profileData,
+            current_streak: profileData.current_streak || 0,
+          });
           setSelectedLanguage(profileData.preferred_language || 'English');
         }
 

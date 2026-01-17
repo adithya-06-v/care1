@@ -11,14 +11,17 @@ import {
   ArrowLeft, 
   ArrowRight, 
   Clock, 
-  CheckCircle2,
   Pause,
   Play,
   X,
   Volume2,
-  Mic
 } from 'lucide-react';
 import { generateExercises, getExerciseTypeName, getExerciseIcon, Exercise } from '@/lib/exerciseGenerator';
+import { useAudioRecorder } from '@/hooks/useAudioRecorder';
+import { RecordingButton } from '@/components/therapy/RecordingButton';
+import { AIFeedback } from '@/components/therapy/AIFeedback';
+import { SessionSummary } from '@/components/therapy/SessionSummary';
+import { generateAIFeedback, generateImprovementTips, extractWordsPracticed, FeedbackResult } from '@/lib/aiFeedbackGenerator';
 
 interface ProfileData {
   age_group: string | null;
@@ -27,6 +30,9 @@ interface ProfileData {
   difficulty: string | null;
   therapy_sessions_completed: number | null;
   total_practice_minutes: number | null;
+  current_streak: number | null;
+  longest_streak: number | null;
+  last_session_date: string | null;
 }
 
 const TherapySession = () => {
@@ -45,6 +51,10 @@ const TherapySession = () => {
   const [exercisesCompleted, setExercisesCompleted] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [accuracyScores, setAccuracyScores] = useState<number[]>([]);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [currentFeedback, setCurrentFeedback] = useState<FeedbackResult | null>(null);
+
+  const { isRecording, audioBlob, audioUrl, startRecording, stopRecording, resetRecording, recordingDuration } = useAudioRecorder();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -52,13 +62,12 @@ const TherapySession = () => {
     }
   }, [user, loading, navigate]);
 
-  // Fetch profile and generate exercises
   useEffect(() => {
     const fetchProfileAndGenerateExercises = async () => {
       if (user) {
         const { data, error } = await supabase
           .from('profiles')
-          .select('age_group, preferred_language, goals, difficulty, therapy_sessions_completed, total_practice_minutes')
+          .select('age_group, preferred_language, goals, difficulty, therapy_sessions_completed, total_practice_minutes, current_streak, longest_streak, last_session_date')
           .eq('user_id', user.id)
           .maybeSingle();
 
@@ -76,9 +85,8 @@ const TherapySession = () => {
     }
   }, [user, duration]);
 
-  // Timer countdown
   useEffect(() => {
-    if (isComplete || isPaused || timeRemaining <= 0) return;
+    if (isComplete || isPaused || timeRemaining <= 0 || showFeedback) return;
 
     const timer = setInterval(() => {
       setTimeRemaining(prev => {
@@ -92,76 +100,138 @@ const TherapySession = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isPaused, isComplete, timeRemaining]);
+  }, [isPaused, isComplete, timeRemaining, showFeedback]);
+
+  const updateStreak = async () => {
+    if (!user || !profile) return;
+
+    const today = new Date().toISOString().split('T')[0];
+    const lastSession = profile.last_session_date;
+    let newStreak = profile.current_streak || 0;
+    let longestStreak = profile.longest_streak || 0;
+
+    if (!lastSession) {
+      newStreak = 1;
+    } else {
+      const lastDate = new Date(lastSession);
+      const todayDate = new Date(today);
+      const diffDays = Math.floor((todayDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+
+      if (diffDays === 1) {
+        newStreak += 1;
+      } else if (diffDays > 1) {
+        newStreak = 1;
+      }
+    }
+
+    if (newStreak > longestStreak) {
+      longestStreak = newStreak;
+    }
+
+    await supabase
+      .from('profiles')
+      .update({
+        current_streak: newStreak,
+        longest_streak: longestStreak,
+        last_session_date: today,
+      })
+      .eq('user_id', user.id);
+  };
 
   const handleSessionComplete = useCallback(async () => {
     if (!user || isComplete) return;
     setIsComplete(true);
 
-    // Calculate final accuracy (simulated for now - random between 70-95)
     const finalAccuracy = accuracyScores.length > 0
       ? accuracyScores.reduce((a, b) => a + b, 0) / accuracyScores.length
       : 70 + Math.random() * 25;
 
     try {
-      // Save session to database
-      const { error: sessionError } = await supabase
-        .from('sessions')
-        .insert({
-          user_id: user.id,
-          duration_minutes: duration,
-          exercises_completed: exercisesCompleted,
-          total_exercises: exercises.length,
-          accuracy_score: Math.round(finalAccuracy * 100) / 100,
-        });
+      await supabase.from('sessions').insert({
+        user_id: user.id,
+        duration_minutes: duration,
+        exercises_completed: exercisesCompleted,
+        total_exercises: exercises.length,
+        accuracy_score: Math.round(finalAccuracy * 100) / 100,
+      });
 
-      if (sessionError) throw sessionError;
-
-      // Update profile stats
       const newSessionsCount = (profile?.therapy_sessions_completed || 0) + 1;
       const newPracticeMinutes = (profile?.total_practice_minutes || 0) + duration;
 
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({
-          therapy_sessions_completed: newSessionsCount,
-          total_practice_minutes: newPracticeMinutes,
-        })
-        .eq('user_id', user.id);
+      await supabase.from('profiles').update({
+        therapy_sessions_completed: newSessionsCount,
+        total_practice_minutes: newPracticeMinutes,
+      }).eq('user_id', user.id);
 
-      if (profileError) throw profileError;
+      await updateStreak();
 
       toast({
         title: 'Session Complete! 🎉',
         description: `You completed ${exercisesCompleted} exercises with ${Math.round(finalAccuracy)}% accuracy.`,
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error saving session:', error);
-      toast({
-        title: 'Session Complete',
-        description: 'There was an issue saving your progress, but great work!',
-        variant: 'destructive',
-      });
     }
   }, [user, isComplete, duration, exercisesCompleted, exercises.length, accuracyScores, profile]);
 
-  const handleNextExercise = () => {
-    // Simulate accuracy score for this exercise (70-95%)
-    const score = 70 + Math.random() * 25;
-    setAccuracyScores(prev => [...prev, score]);
+  const handleRecordingComplete = () => {
+    if (audioBlob) {
+      const currentExercise = exercises[currentExerciseIndex];
+      const feedback = generateAIFeedback(
+        currentExercise?.content || '',
+        currentExercise?.type || 'pronunciation',
+        profile?.difficulty || 'beginner',
+        profile?.goals || ['pronunciation']
+      );
+      setCurrentFeedback(feedback);
+      setShowFeedback(true);
+    }
+  };
+
+  const handleFeedbackContinue = () => {
+    if (currentFeedback) {
+      setAccuracyScores(prev => [...prev, currentFeedback.score]);
+    }
     setExercisesCompleted(prev => prev + 1);
+    setShowFeedback(false);
+    setCurrentFeedback(null);
+    resetRecording();
 
     if (currentExerciseIndex < exercises.length - 1) {
       setCurrentExerciseIndex(prev => prev + 1);
     } else if (timeRemaining > 0) {
-      // Loop back to start if time remains
       setCurrentExerciseIndex(0);
+    }
+  };
+
+  const handleTryAgain = () => {
+    setShowFeedback(false);
+    setCurrentFeedback(null);
+    resetRecording();
+  };
+
+  const handleNextExercise = () => {
+    if (audioBlob) {
+      handleRecordingComplete();
+    } else {
+      const score = 70 + Math.random() * 25;
+      setAccuracyScores(prev => [...prev, score]);
+      setExercisesCompleted(prev => prev + 1);
+
+      if (currentExerciseIndex < exercises.length - 1) {
+        setCurrentExerciseIndex(prev => prev + 1);
+      } else if (timeRemaining > 0) {
+        setCurrentExerciseIndex(0);
+      }
+      resetRecording();
     }
   };
 
   const handlePrevExercise = () => {
     if (currentExerciseIndex > 0) {
       setCurrentExerciseIndex(prev => prev - 1);
+      resetRecording();
+      setShowFeedback(false);
     }
   };
 
@@ -195,56 +265,14 @@ const TherapySession = () => {
       : 85;
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background flex items-center justify-center p-4">
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <Card className="bg-card border-border shadow-card max-w-md w-full text-center">
-            <CardContent className="p-8">
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.2, type: 'spring' }}
-                className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6"
-              >
-                <CheckCircle2 className="w-10 h-10 text-primary" />
-              </motion.div>
-              
-              <h1 className="text-2xl font-bold text-foreground mb-2">
-                Session Complete! 🎉
-              </h1>
-              <p className="text-muted-foreground mb-6">
-                Great work on your speech therapy practice!
-              </p>
-
-              <div className="grid grid-cols-3 gap-4 mb-8">
-                <div className="p-3 bg-muted/30 rounded-xl">
-                  <p className="text-2xl font-bold text-foreground">{duration}</p>
-                  <p className="text-xs text-muted-foreground">Minutes</p>
-                </div>
-                <div className="p-3 bg-muted/30 rounded-xl">
-                  <p className="text-2xl font-bold text-foreground">{exercisesCompleted}</p>
-                  <p className="text-xs text-muted-foreground">Exercises</p>
-                </div>
-                <div className="p-3 bg-muted/30 rounded-xl">
-                  <p className="text-2xl font-bold text-foreground">{finalAccuracy}%</p>
-                  <p className="text-xs text-muted-foreground">Accuracy</p>
-                </div>
-              </div>
-
-              <Button 
-                size="lg" 
-                onClick={() => navigate('/dashboard')}
-                className="w-full shadow-button"
-              >
-                Return to Dashboard
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
+      <SessionSummary
+        duration={duration}
+        exercisesCompleted={exercisesCompleted}
+        totalExercises={exercises.length}
+        accuracy={finalAccuracy}
+        wordsPracticed={extractWordsPracticed(exercises)}
+        improvementTips={generateImprovementTips(finalAccuracy, exercises.map(e => e.type), profile?.goals || [])}
+      />
     );
   }
 
@@ -253,7 +281,6 @@ const TherapySession = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
-      {/* Header */}
       <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -263,7 +290,6 @@ const TherapySession = () => {
             <span className="font-semibold text-foreground">Therapy Session</span>
           </div>
           
-          {/* Timer */}
           <div className="flex items-center gap-2">
             <Clock className="w-5 h-5 text-primary" />
             <span className={`font-mono text-xl font-bold ${timeRemaining < 60 ? 'text-destructive' : 'text-foreground'}`}>
@@ -271,24 +297,16 @@ const TherapySession = () => {
             </span>
           </div>
 
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={handleExit}
-            className="text-muted-foreground"
-          >
+          <Button variant="ghost" size="sm" onClick={handleExit} className="text-muted-foreground">
             <X className="w-4 h-4 mr-1" />
             Exit
           </Button>
         </div>
         
-        {/* Progress Bar */}
         <Progress value={progressPercent} className="h-1 rounded-none" />
       </header>
 
-      {/* Main Content */}
       <main className="container mx-auto px-4 py-6 max-w-2xl">
-        {/* Exercise Counter */}
         <div className="flex items-center justify-between mb-6">
           <p className="text-sm text-muted-foreground">
             Exercise {currentExerciseIndex + 1} of {exercises.length}
@@ -298,103 +316,101 @@ const TherapySession = () => {
           </p>
         </div>
 
-        {/* Exercise Card */}
         <AnimatePresence mode="wait">
-          <motion.div
-            key={currentExercise?.id}
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Card className="bg-card border-border shadow-card mb-6">
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-3xl">{getExerciseIcon(currentExercise?.type || 'pronunciation')}</span>
-                  <div>
-                    <p className="text-xs text-primary font-medium uppercase tracking-wide">
-                      {getExerciseTypeName(currentExercise?.type || 'pronunciation')}
-                    </p>
-                    <CardTitle className="text-xl text-foreground">
-                      {currentExercise?.title}
-                    </CardTitle>
+          {showFeedback && currentFeedback ? (
+            <motion.div
+              key="feedback"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+            >
+              <AIFeedback
+                score={currentFeedback.score}
+                mispronounced={currentFeedback.mispronounced}
+                suggestion={currentFeedback.suggestion}
+                onTryAgain={handleTryAgain}
+                onContinue={handleFeedbackContinue}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key={currentExercise?.id}
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Card className="bg-card border-border shadow-card mb-6">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="text-3xl">{getExerciseIcon(currentExercise?.type || 'pronunciation')}</span>
+                    <div>
+                      <p className="text-xs text-primary font-medium uppercase tracking-wide">
+                        {getExerciseTypeName(currentExercise?.type || 'pronunciation')}
+                      </p>
+                      <CardTitle className="text-xl text-foreground">
+                        {currentExercise?.title}
+                      </CardTitle>
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="space-y-6">
-                {/* Instruction */}
-                <div className="p-4 bg-primary/5 rounded-xl border border-primary/20">
-                  <p className="text-sm text-muted-foreground flex items-center gap-2">
-                    <Volume2 className="w-4 h-4 text-primary" />
-                    {currentExercise?.instruction}
-                  </p>
-                </div>
+                </CardHeader>
+                
+                <CardContent className="space-y-6">
+                  <div className="p-4 bg-primary/5 rounded-xl border border-primary/20">
+                    <p className="text-sm text-muted-foreground flex items-center gap-2">
+                      <Volume2 className="w-4 h-4 text-primary" />
+                      {currentExercise?.instruction}
+                    </p>
+                  </div>
 
-                {/* Exercise Content */}
-                <div className="p-6 bg-muted/30 rounded-xl min-h-[150px] flex items-center justify-center">
-                  <p className="text-xl md:text-2xl text-foreground text-center leading-relaxed font-medium">
-                    {currentExercise?.content}
-                  </p>
-                </div>
+                  <div className="p-6 bg-muted/30 rounded-xl min-h-[120px] flex items-center justify-center">
+                    <p className="text-xl md:text-2xl text-foreground text-center leading-relaxed font-medium">
+                      {currentExercise?.content}
+                    </p>
+                  </div>
 
-                {/* Microphone Indicator */}
-                <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                  <Mic className="w-5 h-5" />
-                  <span className="text-sm">Speak clearly and at your own pace</span>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+                  <RecordingButton
+                    isRecording={isRecording}
+                    hasRecording={!!audioBlob}
+                    audioUrl={audioUrl}
+                    duration={recordingDuration}
+                    onStartRecording={startRecording}
+                    onStopRecording={stopRecording}
+                    onResetRecording={resetRecording}
+                  />
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
         </AnimatePresence>
 
-        {/* Navigation Controls */}
-        <div className="flex items-center justify-between gap-4">
-          <Button
-            variant="outline"
-            onClick={handlePrevExercise}
-            disabled={currentExerciseIndex === 0}
-            className="flex-1 max-w-[140px]"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Previous
-          </Button>
+        {!showFeedback && (
+          <div className="flex items-center justify-between gap-4">
+            <Button variant="outline" onClick={handlePrevExercise} disabled={currentExerciseIndex === 0} className="flex-1 max-w-[140px]">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Previous
+            </Button>
 
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setIsPaused(!isPaused)}
-            className="w-12 h-12 rounded-full"
-          >
-            {isPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
-          </Button>
+            <Button variant="outline" size="icon" onClick={() => setIsPaused(!isPaused)} className="w-12 h-12 rounded-full">
+              {isPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
+            </Button>
 
-          <Button
-            onClick={handleNextExercise}
-            className="flex-1 max-w-[140px] shadow-button"
-          >
-            {currentExerciseIndex === exercises.length - 1 ? 'Complete' : 'Next'}
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        </div>
+            <Button onClick={handleNextExercise} className="flex-1 max-w-[140px] shadow-button">
+              {audioBlob ? 'Submit' : currentExerciseIndex === exercises.length - 1 ? 'Complete' : 'Skip'}
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
+        )}
 
-        {/* Pause Overlay */}
         <AnimatePresence>
           {isPaused && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50"
-            >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
               <Card className="bg-card border-border shadow-card p-8 text-center">
                 <Pause className="w-12 h-12 text-primary mx-auto mb-4" />
                 <h2 className="text-xl font-bold text-foreground mb-2">Session Paused</h2>
                 <p className="text-muted-foreground mb-6">Take your time. Resume when ready.</p>
                 <div className="flex gap-3">
-                  <Button variant="outline" onClick={handleExit}>
-                    End Session
-                  </Button>
+                  <Button variant="outline" onClick={handleExit}>End Session</Button>
                   <Button onClick={() => setIsPaused(false)} className="shadow-button">
                     <Play className="w-4 h-4 mr-2" />
                     Resume

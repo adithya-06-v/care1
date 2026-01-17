@@ -14,15 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          achievement_name: string
+          achievement_type: string
+          description: string | null
+          earned_at: string
+          icon: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          achievement_name: string
+          achievement_type: string
+          description?: string | null
+          earned_at?: string
+          icon?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          achievement_name?: string
+          achievement_type?: string
+          description?: string | null
+          earned_at?: string
+          icon?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age_group: string | null
           avatar_url: string | null
           created_at: string
+          current_streak: number | null
           difficulty: string | null
           full_name: string | null
           goals: string[] | null
           id: string
+          last_session_date: string | null
+          longest_streak: number | null
           onboarding_completed: boolean | null
           preferred_language: string | null
           therapy_sessions_completed: number | null
@@ -34,10 +67,13 @@ export type Database = {
           age_group?: string | null
           avatar_url?: string | null
           created_at?: string
+          current_streak?: number | null
           difficulty?: string | null
           full_name?: string | null
           goals?: string[] | null
           id?: string
+          last_session_date?: string | null
+          longest_streak?: number | null
           onboarding_completed?: boolean | null
           preferred_language?: string | null
           therapy_sessions_completed?: number | null
@@ -49,10 +85,13 @@ export type Database = {
           age_group?: string | null
           avatar_url?: string | null
           created_at?: string
+          current_streak?: number | null
           difficulty?: string | null
           full_name?: string | null
           goals?: string[] | null
           id?: string
+          last_session_date?: string | null
+          longest_streak?: number | null
           onboarding_completed?: boolean | null
           preferred_language?: string | null
           therapy_sessions_completed?: number | null
