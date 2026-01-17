@@ -8,15 +8,6 @@ import Pricing from "@/components/landing/Pricing";
 import FAQ from "@/components/landing/FAQ";
 import Testimonials from "@/components/landing/Testimonials";
 import Footer from "@/components/landing/Footer";
-import { AnimeNavBar } from "@/components/ui/anime-navbar";
-import { Briefcase, FileText, CreditCard, HelpCircle } from "lucide-react";
-
-const navItems = [
-  { name: "Services", url: "#services", icon: Briefcase },
-  { name: "How It Works", url: "#how-it-works", icon: FileText },
-  { name: "Pricing", url: "#pricing", icon: CreditCard },
-  { name: "FAQ", url: "#faq", icon: HelpCircle },
-];
 
 const Index = () => {
   return (
@@ -33,7 +24,6 @@ const Index = () => {
         <Testimonials />
       </main>
       <Footer />
-      <AnimeNavBar items={navItems} defaultActive="Services" />
     </div>
   );
 };
