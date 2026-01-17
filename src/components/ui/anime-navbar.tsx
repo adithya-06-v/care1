@@ -58,7 +58,7 @@ export function AnimeNavBar({ items, className, defaultActive = "Home" }: NavBar
         className
       )}
     >
-      <div className="flex items-center gap-2 bg-background/5 border border-white/10 backdrop-blur-lg py-2 px-2 rounded-full shadow-lg">
+      <div className="flex items-center gap-1 bg-card/95 border border-border backdrop-blur-lg py-2 px-2 rounded-full shadow-card">
         {items.map((item) => {
           const Icon = item.icon
           const isActive = activeTab === item.name
@@ -73,14 +73,14 @@ export function AnimeNavBar({ items, className, defaultActive = "Home" }: NavBar
               onMouseLeave={() => setHoveredTab(null)}
               className={cn(
                 "relative cursor-pointer text-sm font-semibold px-4 py-2 md:px-6 md:py-3 rounded-full transition-all duration-300",
-                "text-white/70 hover:text-white",
-                isActive && "text-white"
+                "text-muted-foreground hover:text-foreground",
+                isActive && "text-primary-foreground"
               )}
             >
               {isActive && (
                 <motion.div
                   layoutId="anime-nav-active"
-                  className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/80 via-secondary/80 to-primary/80 overflow-hidden"
+                  className="absolute inset-0 rounded-full bg-primary overflow-hidden shadow-button"
                   transition={{
                     type: "spring",
                     bounce: 0.3,
@@ -88,7 +88,7 @@ export function AnimeNavBar({ items, className, defaultActive = "Home" }: NavBar
                   }}
                 >
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shine"
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
                     initial={{ x: "-100%" }}
                     animate={{ x: "100%" }}
                     transition={{
@@ -96,21 +96,6 @@ export function AnimeNavBar({ items, className, defaultActive = "Home" }: NavBar
                       repeat: Infinity,
                       repeatType: "loop",
                       ease: "linear",
-                    }}
-                  />
-                  <motion.div
-                    className="absolute inset-0 rounded-full"
-                    animate={{
-                      boxShadow: [
-                        "0 0 10px 2px hsla(174, 73%, 21%, 0.3)",
-                        "0 0 20px 4px hsla(174, 73%, 21%, 0.2)",
-                        "0 0 10px 2px hsla(174, 73%, 21%, 0.3)",
-                      ],
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      repeatType: "mirror",
                     }}
                   />
                 </motion.div>
@@ -127,14 +112,14 @@ export function AnimeNavBar({ items, className, defaultActive = "Home" }: NavBar
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
-                    className="absolute inset-0 bg-white/10 rounded-full"
+                    className="absolute inset-0 bg-accent rounded-full"
                   />
                 )}
               </AnimatePresence>
 
               {isActive && (
                 <motion.div
-                  className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-white/50 rounded-full hidden md:block"
+                  className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary/50 rounded-full hidden md:block"
                   layoutId="anime-nav-underline"
                   transition={{
                     type: "spring",
