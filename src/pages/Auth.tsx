@@ -174,42 +174,42 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-[hsl(174,45%,8%)] flex flex-col items-center justify-center p-4 md:p-8 relative overflow-hidden">
-      {/* Animated background shapes - positioned behind everything */}
-      <motion.div
-        className="absolute right-0 top-[-5px] h-[600px] w-[850px] hidden md:block pointer-events-none"
-        style={{
-          background: 'linear-gradient(45deg, hsl(174,45%,8%), hsl(174,73%,40%))',
-          transformOrigin: 'bottom right',
-          zIndex: 0,
-        }}
-        animate={{
-          rotate: isLogin ? 10 : 0,
-          skewY: isLogin ? 40 : 0,
-        }}
-        transition={{ duration: 1.5, ease: 'easeInOut' }}
-      />
-      <motion.div
-        className="absolute left-[250px] top-full h-[700px] w-[850px] hidden md:block pointer-events-none"
-        style={{
-          background: 'hsl(174,45%,8%)',
-          borderTop: '3px solid hsl(174,73%,40%)',
-          transformOrigin: 'bottom left',
-          zIndex: 0,
-        }}
-        animate={{
-          rotate: isLogin ? 0 : -11,
-          skewY: isLogin ? 0 : -41,
-        }}
-        transition={{ duration: 1.5, ease: 'easeInOut' }}
-      />
-
       {/* Main auth wrapper */}
       <div 
         className="relative w-full max-w-[800px] min-h-[550px] md:h-[500px] border-2 border-[hsl(174,73%,40%)] overflow-hidden bg-[hsl(174,45%,8%)]"
         style={{ boxShadow: '0 0 25px hsl(174,73%,40%)', zIndex: 10 }}
       >
+        {/* Animated background shapes - INSIDE the container */}
+        <motion.div
+          className="absolute right-0 top-[-5px] h-[600px] w-[850px] hidden md:block pointer-events-none"
+          style={{
+            background: 'linear-gradient(45deg, hsl(174,45%,8%), hsl(174,73%,40%))',
+            transformOrigin: 'bottom right',
+            zIndex: 1,
+          }}
+          animate={{
+            rotate: isLogin ? 10 : 0,
+            skewY: isLogin ? 40 : 0,
+          }}
+          transition={{ duration: 1.5, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className="absolute left-[250px] top-full h-[700px] w-[850px] hidden md:block pointer-events-none"
+          style={{
+            background: 'hsl(174,45%,8%)',
+            borderTop: '3px solid hsl(174,73%,40%)',
+            transformOrigin: 'bottom left',
+            zIndex: 2,
+          }}
+          animate={{
+            rotate: isLogin ? 0 : -11,
+            skewY: isLogin ? 0 : -41,
+          }}
+          transition={{ duration: 1.5, ease: 'easeInOut' }}
+        />
+
         {/* Desktop Layout */}
-        <div className="hidden md:block h-full">
+        <div className="hidden md:block h-full relative" style={{ zIndex: 5 }}>
           {/* Sign In Panel */}
           <AnimatePresence mode="wait" custom={isLogin ? 1 : -1}>
             {isLogin && (
