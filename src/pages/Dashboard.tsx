@@ -37,12 +37,6 @@ interface SessionStats {
   averageAccuracy: number;
 }
 
-interface SessionStats {
-  totalSessions: number;
-  totalMinutes: number;
-  averageAccuracy: number;
-}
-
 const Dashboard = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
@@ -206,48 +200,70 @@ const Dashboard = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <Card className="bg-card border-border shadow-card">
-            <CardContent className="p-6 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Trophy className="w-6 h-6 text-primary" />
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Trophy className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">
+                <p className="text-xl font-bold text-foreground">
                   {sessionStats.totalSessions}
                 </p>
-                <p className="text-sm text-muted-foreground">Sessions Completed</p>
+                <p className="text-xs text-muted-foreground">Sessions</p>
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-card border-border shadow-card">
-            <CardContent className="p-6 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center">
-                <Clock className="w-6 h-6 text-accent-foreground" />
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
+                <Clock className="w-5 h-5 text-accent-foreground" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">
+                <p className="text-xl font-bold text-foreground">
                   {formatPracticeTime(sessionStats.totalMinutes)}
                 </p>
-                <p className="text-sm text-muted-foreground">Practice Time</p>
+                <p className="text-xs text-muted-foreground">Practice Time</p>
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-card border-border shadow-card">
-            <CardContent className="p-6 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-secondary/50 flex items-center justify-center">
-                <Target className="w-6 h-6 text-secondary-foreground" />
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-secondary/50 flex items-center justify-center">
+                <Target className="w-5 h-5 text-secondary-foreground" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">
+                <p className="text-xl font-bold text-foreground">
                   {sessionStats.averageAccuracy > 0 ? `${sessionStats.averageAccuracy}%` : '—'}
                 </p>
-                <p className="text-sm text-muted-foreground">Accuracy Score</p>
+                <p className="text-xs text-muted-foreground">Accuracy</p>
               </div>
             </CardContent>
           </Card>
+
+          <Card className="bg-gradient-to-br from-orange-500/10 to-red-500/10 border-orange-500/20 shadow-card">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center">
+                <Flame className="w-5 h-5 text-orange-500" />
+              </div>
+              <div>
+                <p className="text-xl font-bold text-foreground">
+                  {profile?.current_streak || 0}
+                </p>
+                <p className="text-xs text-muted-foreground">Day Streak</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Recommended Session */}
+        <div className="mb-8">
+          <RecommendedSession 
+            profile={profile ? { goals: profile.goals, difficulty: profile.difficulty, age_group: profile.age_group } : null}
+            stats={sessionStats}
+          />
         </div>
 
         {/* Main Actions */}
@@ -324,8 +340,11 @@ const Dashboard = () => {
         {/* Quick Actions */}
         <div className="mt-8">
           <h2 className="text-xl font-semibold text-foreground mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="bg-card border-border shadow-card hover:shadow-card-hover transition-all cursor-pointer group">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card 
+              className="bg-card border-border shadow-card hover:shadow-card-hover transition-all cursor-pointer group"
+              onClick={() => navigate('/therapy-session?duration=5')}
+            >
               <CardContent className="p-6 text-center">
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3 group-hover:bg-primary/20 transition-colors">
                   <Mic className="w-6 h-6 text-primary" />
@@ -335,7 +354,10 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border shadow-card hover:shadow-card-hover transition-all cursor-pointer group">
+            <Card 
+              className="bg-card border-border shadow-card hover:shadow-card-hover transition-all cursor-pointer group"
+              onClick={() => navigate('/progress')}
+            >
               <CardContent className="p-6 text-center">
                 <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-3 group-hover:bg-accent/20 transition-colors">
                   <BarChart3 className="w-6 h-6 text-accent-foreground" />
@@ -345,7 +367,10 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border shadow-card hover:shadow-card-hover transition-all cursor-pointer group">
+            <Card 
+              className="bg-card border-border shadow-card hover:shadow-card-hover transition-all cursor-pointer group"
+              onClick={() => navigate('/achievements')}
+            >
               <CardContent className="p-6 text-center">
                 <div className="w-12 h-12 rounded-full bg-secondary/30 flex items-center justify-center mx-auto mb-3 group-hover:bg-secondary/50 transition-colors">
                   <Trophy className="w-6 h-6 text-secondary-foreground" />
@@ -355,7 +380,10 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border shadow-card hover:shadow-card-hover transition-all cursor-pointer group">
+            <Card 
+              className="bg-card border-border shadow-card hover:shadow-card-hover transition-all cursor-pointer group"
+              onClick={() => window.scrollTo({ top: document.querySelector('.grid.grid-cols-2.sm\\:grid-cols-3')?.getBoundingClientRect().top, behavior: 'smooth' })}
+            >
               <CardContent className="p-6 text-center">
                 <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3 group-hover:bg-muted/80 transition-colors">
                   <Globe className="w-6 h-6 text-muted-foreground" />
