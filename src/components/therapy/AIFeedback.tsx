@@ -7,6 +7,7 @@ interface AIFeedbackProps {
   score: number;
   mispronounced: string[];
   suggestion: string;
+  recognizedText?: string;
   onTryAgain: () => void;
   onContinue: () => void;
 }
@@ -14,7 +15,8 @@ interface AIFeedbackProps {
 export const AIFeedback = ({ 
   score, 
   mispronounced, 
-  suggestion, 
+  suggestion,
+  recognizedText,
   onTryAgain, 
   onContinue 
 }: AIFeedbackProps) => {
@@ -51,6 +53,14 @@ export const AIFeedback = ({
         <p className="text-lg font-medium text-foreground mt-1">{getScoreLabel()}</p>
         <Progress value={score} className="h-2 mt-3" />
       </div>
+
+      {/* Recognized Text */}
+      {recognizedText && (
+        <div className="bg-muted/50 rounded-xl p-4">
+          <p className="text-xs text-muted-foreground mb-1 font-medium">What we heard:</p>
+          <p className="text-sm text-foreground italic">"{recognizedText}"</p>
+        </div>
+      )}
 
       {/* Mispronounced Sounds */}
       {mispronounced.length > 0 && (
