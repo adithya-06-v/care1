@@ -29,9 +29,24 @@ const Dashboard = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('English');
 
   useEffect(() => {
-    if (!loading && !user) {
-      navigate('/auth');
-    }
+    const checkAuth = async () => {
+      if (!loading && !user) {
+        navigate('/auth');
+      } else if (!loading && user) {
+        // Check if user has completed onboarding
+        const { data } = await supabase
+          .from('profiles')
+          .select('onboarding_completed')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (!data?.onboarding_completed) {
+          navigate('/onboarding');
+        }
+      }
+    };
+
+    checkAuth();
   }, [user, loading, navigate]);
 
   useEffect(() => {

@@ -16,30 +16,42 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
+          age_group: string | null
           avatar_url: string | null
           created_at: string
+          difficulty: string | null
           full_name: string | null
+          goals: string[] | null
           id: string
+          onboarding_completed: boolean | null
           preferred_language: string | null
           therapy_sessions_completed: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          age_group?: string | null
           avatar_url?: string | null
           created_at?: string
+          difficulty?: string | null
           full_name?: string | null
+          goals?: string[] | null
           id?: string
+          onboarding_completed?: boolean | null
           preferred_language?: string | null
           therapy_sessions_completed?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          age_group?: string | null
           avatar_url?: string | null
           created_at?: string
+          difficulty?: string | null
           full_name?: string | null
+          goals?: string[] | null
           id?: string
+          onboarding_completed?: boolean | null
           preferred_language?: string | null
           therapy_sessions_completed?: number | null
           updated_at?: string
