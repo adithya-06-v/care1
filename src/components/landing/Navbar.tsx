@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 
@@ -11,6 +12,15 @@ const navLinks = [
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleGetStarted = () => {
+    navigate('/auth');
+  };
+
+  const handleLogin = () => {
+    navigate('/auth');
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
@@ -39,10 +49,10 @@ const Navbar = () => {
 
           {/* Desktop CTA */}
           <div className="hidden lg:flex items-center gap-4">
-            <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" className="text-muted-foreground hover:text-foreground" onClick={handleLogin}>
               Login
             </Button>
-            <Button className="rounded-pill px-6 shadow-button hover:shadow-card-hover transition-all">
+            <Button className="rounded-pill px-6 shadow-button hover:shadow-card-hover transition-all" onClick={handleGetStarted}>
               Get Started
             </Button>
           </div>
@@ -72,10 +82,10 @@ const Navbar = () => {
                 </a>
               ))}
               <div className="flex flex-col gap-3 pt-4 border-t border-border">
-                <Button variant="ghost" className="justify-start text-muted-foreground">
+                <Button variant="ghost" className="justify-start text-muted-foreground" onClick={handleLogin}>
                   Login
                 </Button>
-                <Button className="rounded-pill shadow-button">
+                <Button className="rounded-pill shadow-button" onClick={handleGetStarted}>
                   Get Started
                 </Button>
               </div>
