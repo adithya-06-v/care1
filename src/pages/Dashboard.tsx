@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -21,6 +22,13 @@ interface Profile {
   full_name: string | null;
   preferred_language: string;
   therapy_sessions_completed: number;
+  total_practice_minutes: number;
+}
+
+interface SessionStats {
+  totalSessions: number;
+  totalMinutes: number;
+  averageAccuracy: number;
 }
 
 const Dashboard = () => {
@@ -28,6 +36,12 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [selectedLanguage, setSelectedLanguage] = useState('English');
+  const [sessionDuration, setSessionDuration] = useState('');
+  const [sessionStats, setSessionStats] = useState<SessionStats>({
+    totalSessions: 0,
+    totalMinutes: 0,
+    averageAccuracy: 0,
+  });
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -51,23 +65,44 @@ const Dashboard = () => {
   }, [user, loading, navigate]);
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchProfileAndStats = async () => {
       if (user) {
-        const { data, error } = await supabase
+        // Fetch profile
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('full_name, preferred_language, therapy_sessions_completed')
+          .select('full_name, preferred_language, therapy_sessions_completed, total_practice_minutes')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
         
-        if (data && !error) {
-          setProfile(data);
-          setSelectedLanguage(data.preferred_language || 'English');
+        if (profileData && !profileError) {
+          setProfile(profileData);
+          setSelectedLanguage(profileData.preferred_language || 'English');
+        }
+
+        // Fetch session stats
+        const { data: sessionsData, error: sessionsError } = await supabase
+          .from('sessions')
+          .select('duration_minutes, accuracy_score')
+          .eq('user_id', user.id);
+
+        if (sessionsData && !sessionsError) {
+          const totalSessions = sessionsData.length;
+          const totalMinutes = sessionsData.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
+          const avgAccuracy = totalSessions > 0
+            ? sessionsData.reduce((sum, s) => sum + (Number(s.accuracy_score) || 0), 0) / totalSessions
+            : 0;
+
+          setSessionStats({
+            totalSessions: profileData?.therapy_sessions_completed || totalSessions,
+            totalMinutes: profileData?.total_practice_minutes || totalMinutes,
+            averageAccuracy: Math.round(avgAccuracy),
+          });
         }
       }
     };
 
     if (user) {
-      setTimeout(() => fetchProfile(), 0);
+      fetchProfileAndStats();
     }
   }, [user]);
 
@@ -81,11 +116,24 @@ const Dashboard = () => {
   };
 
   const handleStartSession = () => {
-    toast({
-      title: 'Starting Session',
-      description: `Beginning ${selectedLanguage} speech therapy session...`,
-    });
-    // Placeholder for actual therapy session
+    const minutes = parseInt(sessionDuration, 10);
+    if (!minutes || minutes < 1 || minutes > 120) {
+      toast({
+        title: 'Invalid Duration',
+        description: 'Please enter a duration between 1 and 120 minutes.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    navigate(`/therapy-session?duration=${minutes}`);
+  };
+
+  const formatPracticeTime = (minutes: number) => {
+    if (minutes < 60) return `${minutes} min`;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return mins > 0 ? `${hours}h ${mins}m` : `${hours} hrs`;
   };
 
   const languages = ['English', 'Spanish', 'French', 'German', 'Mandarin', 'Hindi'];
@@ -151,7 +199,7 @@ const Dashboard = () => {
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">
-                  {profile?.therapy_sessions_completed || 0}
+                  {sessionStats.totalSessions}
                 </p>
                 <p className="text-sm text-muted-foreground">Sessions Completed</p>
               </div>
@@ -164,7 +212,9 @@ const Dashboard = () => {
                 <Clock className="w-6 h-6 text-accent-foreground" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">12 hrs</p>
+                <p className="text-2xl font-bold text-foreground">
+                  {formatPracticeTime(sessionStats.totalMinutes)}
+                </p>
                 <p className="text-sm text-muted-foreground">Practice Time</p>
               </div>
             </CardContent>
@@ -176,7 +226,9 @@ const Dashboard = () => {
                 <Target className="w-6 h-6 text-secondary-foreground" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">85%</p>
+                <p className="text-2xl font-bold text-foreground">
+                  {sessionStats.averageAccuracy > 0 ? `${sessionStats.averageAccuracy}%` : '—'}
+                </p>
                 <p className="text-sm text-muted-foreground">Accuracy Score</p>
               </div>
             </CardContent>
@@ -221,17 +273,31 @@ const Dashboard = () => {
                 <Mic className="w-5 h-5 text-primary" />
                 Start Therapy Session
               </CardTitle>
-              <CardDescription>Begin AI-powered voice exercises</CardDescription>
+              <CardDescription>Choose your session duration</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-muted-foreground text-sm">
-                Start a personalized speech therapy session with real-time AI feedback 
-                and pronunciation analysis in <strong>{selectedLanguage}</strong>.
-              </p>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">
+                  Session Duration
+                </label>
+                <Input
+                  type="number"
+                  placeholder="Enter minutes e.g. 7, 12, 25"
+                  value={sessionDuration}
+                  onChange={(e) => setSessionDuration(e.target.value)}
+                  min={1}
+                  max={120}
+                  className="text-lg"
+                />
+                <p className="text-xs text-muted-foreground mt-2">
+                  Personalized exercises in <strong>{selectedLanguage}</strong> based on your therapy goals
+                </p>
+              </div>
               <Button 
                 size="lg" 
                 className="w-full rounded-pill shadow-button hover:shadow-card-hover transition-all"
                 onClick={handleStartSession}
+                disabled={!sessionDuration}
               >
                 <Play className="w-5 h-5 mr-2" />
                 Start Session
