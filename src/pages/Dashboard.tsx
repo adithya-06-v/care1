@@ -1,9 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
+import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   LogOut, 
@@ -26,6 +27,7 @@ import { MispronounedWords } from '@/components/dashboard/MispronounedWords';
 import { PerformanceBadge } from '@/components/dashboard/PerformanceBadge';
 import { TodaysFocus } from '@/components/dashboard/TodaysFocus';
 import { TherapyModeSelector } from '@/components/dashboard/TherapyModeSelector';
+import { UpgradeBanner } from '@/components/subscription/UpgradeBanner';
 import { TherapyMode } from '@/lib/therapyModes';
 
 interface Profile {
@@ -48,7 +50,9 @@ interface SessionStats {
 
 const Dashboard = () => {
   const { user, loading, signOut } = useAuth();
+  const { isPro, refreshSubscription } = useSubscription();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [selectedLanguage, setSelectedLanguage] = useState('English');
   const [sessionDuration, setSessionDuration] = useState('');
@@ -59,6 +63,26 @@ const Dashboard = () => {
     totalMinutes: 0,
     averageAccuracy: 0,
   });
+
+  // Handle Stripe redirect success
+  useEffect(() => {
+    const upgradeStatus = searchParams.get('upgrade');
+    if (upgradeStatus === 'success') {
+      toast({
+        title: 'Welcome to Pro! 🎉',
+        description: 'You now have unlimited sessions and all premium features.',
+      });
+      refreshSubscription();
+      // Clean up URL
+      window.history.replaceState({}, '', '/dashboard');
+    } else if (upgradeStatus === 'cancelled') {
+      toast({
+        title: 'Upgrade Cancelled',
+        description: 'No worries! You can upgrade anytime from your dashboard.',
+      });
+      window.history.replaceState({}, '', '/dashboard');
+    }
+  }, [searchParams, refreshSubscription]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -204,6 +228,9 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
+        {/* Upgrade Banner for Free Users */}
+        {!isPro && <UpgradeBanner />}
+        
         {/* Welcome Section */}
         <div className="mb-8 flex items-center justify-between flex-wrap gap-4">
           <div>

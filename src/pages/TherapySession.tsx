@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
+import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -53,9 +54,11 @@ const TherapySession = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, loading } = useAuth();
+  const { isPro, isLoading: subscriptionLoading, createCheckout } = useSubscription();
   
   const duration = parseInt(searchParams.get('duration') || '10', 10);
   const sessionMode = searchParams.get('mode'); // 'focused' mode for sound-focused practice
+  const [sessionLimitReached, setSessionLimitReached] = useState(false);
   
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -89,6 +92,26 @@ const TherapySession = () => {
       navigate('/auth');
     }
   }, [user, loading, navigate]);
+
+  // Check daily session limit for free users
+  useEffect(() => {
+    const checkSessionLimit = async () => {
+      if (!user || isPro || subscriptionLoading) return;
+
+      const today = new Date().toISOString().split('T')[0];
+      const { count, error } = await supabase
+        .from('sessions')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .gte('created_at', `${today}T00:00:00.000Z`);
+
+      if (!error && count !== null && count >= 5) {
+        setSessionLimitReached(true);
+      }
+    };
+
+    checkSessionLimit();
+  }, [user, isPro, subscriptionLoading]);
 
   useEffect(() => {
     const fetchProfileAndGenerateExercises = async () => {
@@ -554,13 +577,59 @@ const TherapySession = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  if (loading || isLoading) {
+  if (loading || isLoading || subscriptionLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading your personalized session...</p>
         </div>
+      </div>
+    );
+  }
+
+  // Show session limit reached screen for free users
+  if (sessionLimitReached && !isPro) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="max-w-md w-full bg-card border-border shadow-card">
+          <CardHeader className="text-center">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+              <Clock className="w-8 h-8 text-primary" />
+            </div>
+            <CardTitle className="text-xl text-foreground">Daily Limit Reached</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <p className="text-muted-foreground">
+              You've completed 5 sessions today on the free plan. Upgrade to Pro for unlimited sessions!
+            </p>
+            <div className="space-y-3">
+              <Button 
+                onClick={async () => {
+                  try {
+                    await createCheckout();
+                  } catch (error) {
+                    toast({
+                      title: 'Error',
+                      description: 'Failed to start checkout. Please try again.',
+                      variant: 'destructive',
+                    });
+                  }
+                }}
+                className="w-full rounded-pill shadow-button"
+              >
+                Upgrade to Pro — $20/mo
+              </Button>
+              <Button 
+                variant="ghost" 
+                onClick={() => navigate('/dashboard')}
+                className="w-full"
+              >
+                Back to Dashboard
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
