@@ -1,9 +1,13 @@
 "use client"
 
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Check, X } from "lucide-react"
+import { useAuth } from "@/hooks/useAuth"
+import { useSubscription } from "@/hooks/useSubscription"
+import { toast } from "@/hooks/use-toast"
 
 interface Feature {
   name: string
@@ -53,6 +57,43 @@ const tiers: Tier[] = [
 const Pricing = () => {
   const [isYearly, setIsYearly] = useState(false)
   const [hoveredTier, setHoveredTier] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const navigate = useNavigate()
+  const { user } = useAuth()
+  const { isPro, createCheckout } = useSubscription()
+
+  const handlePlanClick = async (tierName: string) => {
+    if (tierName === "Starter") {
+      navigate('/auth')
+      return
+    }
+
+    if (!user) {
+      navigate('/auth')
+      return
+    }
+
+    if (isPro) {
+      toast({
+        title: "Already subscribed",
+        description: "You already have an active Pro subscription.",
+      })
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      await createCheckout()
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to start checkout. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <section id="pricing" className="py-16 lg:py-24 bg-background">
@@ -162,8 +203,13 @@ const Pricing = () => {
                     : "bg-transparent border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                 }`}
                 variant={tier.highlight ? "default" : "outline"}
+                onClick={() => handlePlanClick(tier.name)}
+                disabled={isLoading && tier.highlight}
               >
-                {tier.highlight ? "Buy Pro Plan" : "Start Free"}
+                {tier.highlight 
+                  ? (isLoading ? "Loading..." : (isPro ? "Current Plan" : "Buy Pro Plan"))
+                  : "Start Free"
+                }
               </Button>
             </div>
           ))}
