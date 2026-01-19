@@ -17,12 +17,20 @@ import {
   Volume2,
   Loader2,
 } from 'lucide-react';
-import { generateExercises, getExerciseTypeName, getExerciseIcon, Exercise } from '@/lib/exerciseGenerator';
+import { generateExercises, getExerciseTypeName, getExerciseIcon, Exercise, AdaptiveData } from '@/lib/exerciseGenerator';
 import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { useSpeechAnalysis, SpeechAnalysisResult } from '@/hooks/useSpeechAnalysis';
 import { RecordingButton } from '@/components/therapy/RecordingButton';
 import { AIFeedback } from '@/components/therapy/AIFeedback';
 import { SessionSummary } from '@/components/therapy/SessionSummary';
+import { 
+  updateExerciseProgress, 
+  updateDifficultyProgression,
+  getWeakExercises,
+  getMasteredExercises,
+  getWeakPhonemePatterns,
+  getUserDifficultyProgress
+} from '@/lib/adaptiveDifficulty';
 
 interface ProfileData {
   age_group: string | null;
@@ -69,6 +77,7 @@ const TherapySession = () => {
   useEffect(() => {
     const fetchProfileAndGenerateExercises = async () => {
       if (user) {
+        // Fetch profile
         const { data, error } = await supabase
           .from('profiles')
           .select('age_group, preferred_language, goals, difficulty, therapy_sessions_completed, total_practice_minutes, current_streak, longest_streak, last_session_date')
@@ -77,7 +86,24 @@ const TherapySession = () => {
 
         if (data && !error) {
           setProfile(data);
-          const generatedExercises = generateExercises(data, duration);
+          
+          // Fetch adaptive data for exercise generation
+          const [weakExercises, masteredExercises, weakPhonemes, difficultyProgress] = await Promise.all([
+            getWeakExercises(user.id),
+            getMasteredExercises(user.id),
+            getWeakPhonemePatterns(user.id),
+            getUserDifficultyProgress(user.id),
+          ]);
+          
+          const adaptiveData: AdaptiveData = {
+            weakExercises,
+            masteredExercises,
+            weakPhonemes,
+            currentDifficulty: difficultyProgress?.current_difficulty || (data.difficulty as 'beginner' | 'moderate' | 'severe') || 'beginner',
+          };
+          
+          // Generate exercises with adaptive data
+          const generatedExercises = generateExercises(data, duration, adaptiveData);
           setExercises(generatedExercises);
         }
         setIsLoading(false);
@@ -182,6 +208,9 @@ const TherapySession = () => {
         }).eq('user_id', user.id);
 
         await updateStreak();
+        
+        // Update difficulty progression for next session
+        await updateDifficultyProgression(user.id, finalAccuracy);
       }
 
       toast({
@@ -290,11 +319,18 @@ const TherapySession = () => {
         await updateSessionStats(sessionId, result.pronunciationScore);
       }
       
+      // Update adaptive difficulty tracking
+      // Score > 85 → mastered, 60-85 → learning, < 60 → weak
+      await updateExerciseProgress(user.id, exerciseText, result.pronunciationScore);
+      
       // Increment local completed count immediately
       setExercisesCompleted(prev => prev + 1);
       setAccuracyScores(prev => [...prev, result.pronunciationScore]);
       
-      console.log('Exercise result saved and session updated immediately');
+      console.log(`Exercise saved: ${result.pronunciationScore}% - Status: ${
+        result.pronunciationScore > 85 ? 'mastered' : 
+        result.pronunciationScore >= 60 ? 'learning' : 'weak'
+      }`);
     } catch (error) {
       console.error('Error saving exercise result:', error);
     }
