@@ -20,6 +20,7 @@ import {
 import { generateExercises, getExerciseTypeName, getExerciseIcon, Exercise, AdaptiveData } from '@/lib/exerciseGenerator';
 import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { useSpeechAnalysis, SpeechAnalysisResult } from '@/hooks/useSpeechAnalysis';
+import { useEmotionTracker } from '@/hooks/useEmotionTracker';
 import { RecordingButton } from '@/components/therapy/RecordingButton';
 import { AIFeedback } from '@/components/therapy/AIFeedback';
 import { SessionSummary } from '@/components/therapy/SessionSummary';
@@ -33,6 +34,7 @@ import {
 } from '@/lib/adaptiveDifficulty';
 import { getWeakSoundsForExercises, SOUND_PATTERNS, SoundPattern } from '@/lib/weakSoundAnalysis';
 import { TherapyMode } from '@/lib/therapyModes';
+import { EmotionAnalysis, EmotionTag } from '@/lib/emotionDetection';
 
 interface ProfileData {
   age_group: string | null;
@@ -68,9 +70,19 @@ const TherapySession = () => {
   const [currentFeedback, setCurrentFeedback] = useState<SpeechAnalysisResult | null>(null);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [sessionCreated, setSessionCreated] = useState(false);
+  const [currentEmotionAnalysis, setCurrentEmotionAnalysis] = useState<EmotionAnalysis | null>(null);
 
   const { isRecording, audioBlob, audioUrl, startRecording, stopRecording, resetRecording, recordingDuration } = useAudioRecorder();
   const { isAnalyzing, analyzeSpeech, resetAnalysis } = useSpeechAnalysis();
+  const { 
+    metrics: emotionMetrics, 
+    trackRecordingStart, 
+    trackRecordingEnd, 
+    trackRetry, 
+    analyzeEmotion, 
+    resetTracking: resetEmotionTracking,
+    getEmotionTag 
+  } = useEmotionTracker();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -354,14 +366,14 @@ const TherapySession = () => {
     }
   };
 
-  const saveExerciseResult = async (result: SpeechAnalysisResult, exerciseText: string) => {
+  const saveExerciseResult = async (result: SpeechAnalysisResult, exerciseText: string, emotionTag: EmotionTag = 'neutral') => {
     if (!user) return;
     
     try {
       // Create session if it doesn't exist yet
       const sessionId = await createOrGetSessionId();
       
-      // Save the exercise result immediately
+      // Save the exercise result immediately with emotion tag
       await supabase.from('exercise_results').insert({
         user_id: user.id,
         session_id: sessionId,
@@ -370,6 +382,7 @@ const TherapySession = () => {
         score: result.pronunciationScore,
         feedback: result.feedbackMessage,
         improvement_tip: result.improvementTip,
+        emotion_tag: emotionTag,
       });
       
       // Save sentence performance separately if it's a sentence
@@ -406,7 +419,7 @@ const TherapySession = () => {
       setExercisesCompleted(prev => prev + 1);
       setAccuracyScores(prev => [...prev, result.pronunciationScore]);
       
-      console.log(`Exercise saved: ${result.pronunciationScore}% - Status: ${
+      console.log(`Exercise saved: ${result.pronunciationScore}% - Emotion: ${emotionTag} - Status: ${
         result.pronunciationScore > 85 ? 'mastered' : 
         result.pronunciationScore >= 60 ? 'learning' : 'weak'
       }`);
@@ -453,13 +466,20 @@ const TherapySession = () => {
       const currentExercise = exercises[currentExerciseIndex];
       const expectedText = currentExercise?.content || '';
       
+      // Track recording end for emotion detection
+      trackRecordingEnd(recordingDuration);
+      
       const result = await analyzeSpeech(audioBlob, expectedText);
       
       if (result) {
+        // Analyze emotion based on recording metrics and pronunciation score
+        const emotionResult = analyzeEmotion(result.pronunciationScore);
+        setCurrentEmotionAnalysis(emotionResult);
+        
         setCurrentFeedback(result);
         setShowFeedback(true);
-        // Save the exercise result to Supabase
-        await saveExerciseResult(result, expectedText);
+        // Save the exercise result to Supabase with emotion tag
+        await saveExerciseResult(result, expectedText, emotionResult.tag);
       } else {
         toast({
           title: 'Analysis failed',
@@ -474,8 +494,10 @@ const TherapySession = () => {
     // Stats already saved in saveExerciseResult, just navigate to next exercise
     setShowFeedback(false);
     setCurrentFeedback(null);
+    setCurrentEmotionAnalysis(null);
     resetRecording();
     resetAnalysis();
+    resetEmotionTracking();
 
     if (currentExerciseIndex < exercises.length - 1) {
       setCurrentExerciseIndex(prev => prev + 1);
@@ -487,8 +509,11 @@ const TherapySession = () => {
   const handleTryAgain = () => {
     setShowFeedback(false);
     setCurrentFeedback(null);
+    setCurrentEmotionAnalysis(null);
     resetRecording();
     resetAnalysis();
+    // Track retry for emotion detection
+    trackRetry();
   };
 
   const handleNextExercise = () => {
@@ -612,6 +637,7 @@ const TherapySession = () => {
                 needsWordDrill={currentFeedback.needsWordDrill}
                 expectedText={exercises[currentExerciseIndex]?.content}
                 therapyMode={profile?.therapy_mode || 'pronunciation'}
+                emotionAnalysis={currentEmotionAnalysis}
                 onTryAgain={handleTryAgain}
                 onContinue={handleFeedbackContinue}
                 onWordDrill={handleWordDrill}
@@ -665,7 +691,10 @@ const TherapySession = () => {
                       hasRecording={!!audioBlob}
                       audioUrl={audioUrl}
                       duration={recordingDuration}
-                      onStartRecording={startRecording}
+                      onStartRecording={() => {
+                        trackRecordingStart();
+                        startRecording();
+                      }}
                       onStopRecording={stopRecording}
                       onResetRecording={resetRecording}
                     />
