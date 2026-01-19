@@ -5,7 +5,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const EXTERNAL_API_URL = 'https://pink-weeks-hammer.loca.lt/analyze-speech';
+const EXTERNAL_API_URL = 'https://carevoice-backend.onrender.com/analyze-speech';
 
 interface ExternalApiResponse {
   recognizedText: string;
@@ -49,7 +49,7 @@ serve(async (req) => {
 
     // Create FormData to send to external API
     const externalFormData = new FormData();
-    externalFormData.append('audio', audioFile, audioFile.name || 'recording.webm');
+    externalFormData.append('file', audioFile, audioFile.name || 'recording.webm');
     externalFormData.append('expected_text', expectedText);
 
     console.log(`Calling external API: ${EXTERNAL_API_URL}`);
@@ -58,9 +58,6 @@ serve(async (req) => {
     const externalResponse = await fetch(EXTERNAL_API_URL, {
       method: 'POST',
       body: externalFormData,
-      headers: {
-        'bypass-tunnel-reminder': 'true', // For localtunnel bypass
-      },
     });
 
     if (!externalResponse.ok) {
