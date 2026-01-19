@@ -1,9 +1,10 @@
 import { motion } from 'framer-motion';
-import { CheckCircle, AlertCircle, RefreshCw, BookOpen, AlertTriangle } from 'lucide-react';
+import { CheckCircle, AlertCircle, RefreshCw, BookOpen, AlertTriangle, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { WordAnalysis } from '@/hooks/useSpeechAnalysis';
+import { TherapyMode, getFeedbackLabel, getEncouragement, getTip } from '@/lib/therapyModes';
 
 interface AIFeedbackProps {
   score: number;
@@ -18,6 +19,7 @@ interface AIFeedbackProps {
   incorrectWords?: string[];
   needsWordDrill?: boolean;
   expectedText?: string;
+  therapyMode?: TherapyMode;
   onTryAgain: () => void;
   onContinue: () => void;
   onWordDrill?: (words: string[]) => void;
@@ -35,6 +37,7 @@ export const AIFeedback = ({
   incorrectWords = [],
   needsWordDrill = false,
   expectedText,
+  therapyMode = 'pronunciation',
   onTryAgain, 
   onContinue,
   onWordDrill,
@@ -45,13 +48,12 @@ export const AIFeedback = ({
     return 'text-red-500';
   };
 
-  const getScoreLabel = () => {
-    if (score >= 90) return 'Excellent!';
-    if (score >= 80) return 'Great job!';
-    if (score >= 70) return 'Good effort!';
-    if (score >= 60) return 'Keep practicing!';
-    return 'Try again!';
-  };
+  // Use therapy mode for feedback label
+  const getScoreLabel = () => getFeedbackLabel(score, therapyMode);
+  
+  // Get mode-specific encouragement
+  const encouragement = getEncouragement(therapyMode);
+  const modeTip = getTip(therapyMode);
 
   const getWordColor = (status: 'correct' | 'incorrect' | 'skipped') => {
     switch (status) {
@@ -197,18 +199,18 @@ export const AIFeedback = ({
           <span className="text-sm font-medium text-foreground">Feedback:</span>
         </div>
         <p className="text-sm text-muted-foreground">{suggestion}</p>
+        {/* Mode-specific encouragement */}
+        <p className="text-sm text-primary mt-2 italic">{encouragement}</p>
       </div>
 
-      {/* Improvement Tip */}
-      {improvementTip && (
-        <div className="bg-accent/10 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <CheckCircle className="w-4 h-4 text-accent-foreground" />
-            <span className="text-sm font-medium text-foreground">Improvement Tip:</span>
-          </div>
-          <p className="text-sm text-muted-foreground">{improvementTip}</p>
+      {/* Improvement Tip - use mode-specific tip if no custom tip */}
+      <div className="bg-accent/10 rounded-xl p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Lightbulb className="w-4 h-4 text-accent-foreground" />
+          <span className="text-sm font-medium text-foreground">Tip:</span>
         </div>
-      )}
+        <p className="text-sm text-muted-foreground">{improvementTip || modeTip}</p>
+      </div>
 
       {/* Actions */}
       <div className="space-y-2 pt-2">

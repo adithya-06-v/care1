@@ -25,6 +25,8 @@ import { WeeklyChart } from '@/components/dashboard/WeeklyChart';
 import { MispronounedWords } from '@/components/dashboard/MispronounedWords';
 import { PerformanceBadge } from '@/components/dashboard/PerformanceBadge';
 import { TodaysFocus } from '@/components/dashboard/TodaysFocus';
+import { TherapyModeSelector } from '@/components/dashboard/TherapyModeSelector';
+import { TherapyMode } from '@/lib/therapyModes';
 
 interface Profile {
   full_name: string | null;
@@ -35,6 +37,7 @@ interface Profile {
   difficulty: string | null;
   age_group: string | null;
   current_streak: number;
+  therapy_mode: TherapyMode | null;
 }
 
 interface SessionStats {
@@ -84,7 +87,7 @@ const Dashboard = () => {
         // Fetch profile
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('full_name, preferred_language, therapy_sessions_completed, total_practice_minutes, goals, difficulty, age_group, current_streak')
+          .select('full_name, preferred_language, therapy_sessions_completed, total_practice_minutes, goals, difficulty, age_group, current_streak, therapy_mode')
           .eq('user_id', user.id)
           .maybeSingle();
         
@@ -92,6 +95,7 @@ const Dashboard = () => {
           setProfile({
             ...profileData,
             current_streak: profileData.current_streak || 0,
+            therapy_mode: (profileData.therapy_mode as TherapyMode) || 'pronunciation',
           });
           setSelectedLanguage(profileData.preferred_language || 'English');
         }
@@ -287,8 +291,13 @@ const Dashboard = () => {
           <MispronounedWords userId={user.id} />
         </div>
 
-        {/* Recommended Session */}
-        <div className="mb-8">
+        {/* Therapy Mode Selector & Recommended Session */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <TherapyModeSelector 
+            userId={user.id} 
+            currentMode={profile?.therapy_mode || 'pronunciation'}
+            onModeChange={(mode) => setProfile(prev => prev ? { ...prev, therapy_mode: mode } : null)}
+          />
           <RecommendedSession 
             profile={profile ? { goals: profile.goals, difficulty: profile.difficulty, age_group: profile.age_group } : null}
             stats={sessionStats}
