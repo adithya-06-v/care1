@@ -44,6 +44,50 @@ export type Database = {
         }
         Relationships: []
       }
+      exercise_results: {
+        Row: {
+          created_at: string
+          exercise_text: string
+          feedback: string | null
+          id: string
+          improvement_tip: string | null
+          recognized_text: string | null
+          score: number | null
+          session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          exercise_text: string
+          feedback?: string | null
+          id?: string
+          improvement_tip?: string | null
+          recognized_text?: string | null
+          score?: number | null
+          session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          exercise_text?: string
+          feedback?: string | null
+          id?: string
+          improvement_tip?: string | null
+          recognized_text?: string | null
+          score?: number | null
+          session_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_results_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           age_group: string | null

@@ -55,6 +55,7 @@ const TherapySession = () => {
   const [accuracyScores, setAccuracyScores] = useState<number[]>([]);
   const [showFeedback, setShowFeedback] = useState(false);
   const [currentFeedback, setCurrentFeedback] = useState<SpeechAnalysisResult | null>(null);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
 
   const { isRecording, audioBlob, audioUrl, startRecording, stopRecording, resetRecording, recordingDuration } = useAudioRecorder();
   const { isAnalyzing, analyzeSpeech, resetAnalysis } = useSpeechAnalysis();
@@ -150,13 +151,20 @@ const TherapySession = () => {
       : 70 + Math.random() * 25;
 
     try {
-      await supabase.from('sessions').insert({
+      // Create session record and get the ID
+      const { data: sessionData, error: sessionError } = await supabase.from('sessions').insert({
         user_id: user.id,
         duration_minutes: duration,
         exercises_completed: exercisesCompleted,
         total_exercises: exercises.length,
         accuracy_score: Math.round(finalAccuracy * 100) / 100,
-      });
+      }).select('id').single();
+
+      if (sessionError) {
+        console.error('Error creating session:', sessionError);
+      } else if (sessionData) {
+        setCurrentSessionId(sessionData.id);
+      }
 
       const newSessionsCount = (profile?.therapy_sessions_completed || 0) + 1;
       const newPracticeMinutes = (profile?.total_practice_minutes || 0) + duration;
@@ -177,6 +185,25 @@ const TherapySession = () => {
     }
   }, [user, isComplete, duration, exercisesCompleted, exercises.length, accuracyScores, profile]);
 
+  const saveExerciseResult = async (result: SpeechAnalysisResult, exerciseText: string) => {
+    if (!user) return;
+    
+    try {
+      await supabase.from('exercise_results').insert({
+        user_id: user.id,
+        session_id: currentSessionId,
+        exercise_text: exerciseText,
+        recognized_text: result.recognizedText,
+        score: result.pronunciationScore,
+        feedback: result.feedbackMessage,
+        improvement_tip: result.improvementTip,
+      });
+      console.log('Exercise result saved successfully');
+    } catch (error) {
+      console.error('Error saving exercise result:', error);
+    }
+  };
+
   const handleRecordingComplete = async () => {
     if (audioBlob) {
       const currentExercise = exercises[currentExerciseIndex];
@@ -187,6 +214,8 @@ const TherapySession = () => {
       if (result) {
         setCurrentFeedback(result);
         setShowFeedback(true);
+        // Save the exercise result to Supabase
+        await saveExerciseResult(result, expectedText);
       } else {
         toast({
           title: 'Analysis failed',
@@ -340,6 +369,7 @@ const TherapySession = () => {
                 mispronounced={currentFeedback.mispronounced}
                 suggestion={currentFeedback.feedbackMessage}
                 recognizedText={currentFeedback.recognizedText}
+                improvementTip={currentFeedback.improvementTip}
                 onTryAgain={handleTryAgain}
                 onContinue={handleFeedbackContinue}
               />
