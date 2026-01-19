@@ -23,7 +23,6 @@ import { useSpeechAnalysis, SpeechAnalysisResult } from '@/hooks/useSpeechAnalys
 import { RecordingButton } from '@/components/therapy/RecordingButton';
 import { AIFeedback } from '@/components/therapy/AIFeedback';
 import { SessionSummary } from '@/components/therapy/SessionSummary';
-import { generateImprovementTips, extractWordsPracticed } from '@/lib/aiFeedbackGenerator';
 
 interface ProfileData {
   age_group: string | null;
@@ -394,18 +393,12 @@ const TherapySession = () => {
   }
 
   if (isComplete) {
-    const finalAccuracy = accuracyScores.length > 0
-      ? Math.round(accuracyScores.reduce((a, b) => a + b, 0) / accuracyScores.length)
-      : 85;
-
     return (
       <SessionSummary
+        sessionId={currentSessionId}
         duration={duration}
         exercisesCompleted={exercisesCompleted}
         totalExercises={exercises.length}
-        accuracy={finalAccuracy}
-        wordsPracticed={extractWordsPracticed(exercises)}
-        improvementTips={generateImprovementTips(finalAccuracy, exercises.map(e => e.type), profile?.goals || [])}
       />
     );
   }
