@@ -56,6 +56,7 @@ const TherapySession = () => {
   const [showFeedback, setShowFeedback] = useState(false);
   const [currentFeedback, setCurrentFeedback] = useState<SpeechAnalysisResult | null>(null);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [sessionCreated, setSessionCreated] = useState(false);
 
   const { isRecording, audioBlob, audioUrl, startRecording, stopRecording, resetRecording, recordingDuration } = useAudioRecorder();
   const { isAnalyzing, analyzeSpeech, resetAnalysis } = useSpeechAnalysis();
@@ -148,57 +149,153 @@ const TherapySession = () => {
 
     const finalAccuracy = accuracyScores.length > 0
       ? accuracyScores.reduce((a, b) => a + b, 0) / accuracyScores.length
-      : 70 + Math.random() * 25;
+      : 0;
 
     try {
-      // Create session record and get the ID
-      const { data: sessionData, error: sessionError } = await supabase.from('sessions').insert({
-        user_id: user.id,
-        duration_minutes: duration,
-        exercises_completed: exercisesCompleted,
-        total_exercises: exercises.length,
-        accuracy_score: Math.round(finalAccuracy * 100) / 100,
-      }).select('id').single();
-
-      if (sessionError) {
-        console.error('Error creating session:', sessionError);
-      } else if (sessionData) {
-        setCurrentSessionId(sessionData.id);
+      // If session was already created during exercises, just update final stats
+      if (currentSessionId && sessionCreated) {
+        await supabase
+          .from('sessions')
+          .update({
+            total_exercises: exercises.length,
+            accuracy_score: Math.round(finalAccuracy * 100) / 100,
+          })
+          .eq('id', currentSessionId);
+      } else if (exercisesCompleted > 0) {
+        // Session wasn't created but exercises were completed (edge case)
+        await supabase.from('sessions').insert({
+          user_id: user.id,
+          duration_minutes: duration,
+          exercises_completed: exercisesCompleted,
+          total_exercises: exercises.length,
+          accuracy_score: Math.round(finalAccuracy * 100) / 100,
+        });
       }
 
-      const newSessionsCount = (profile?.therapy_sessions_completed || 0) + 1;
-      const newPracticeMinutes = (profile?.total_practice_minutes || 0) + duration;
+      // Only update profile stats if exercises were completed
+      if (exercisesCompleted > 0) {
+        const newSessionsCount = (profile?.therapy_sessions_completed || 0) + 1;
+        const newPracticeMinutes = (profile?.total_practice_minutes || 0) + duration;
 
-      await supabase.from('profiles').update({
-        therapy_sessions_completed: newSessionsCount,
-        total_practice_minutes: newPracticeMinutes,
-      }).eq('user_id', user.id);
+        await supabase.from('profiles').update({
+          therapy_sessions_completed: newSessionsCount,
+          total_practice_minutes: newPracticeMinutes,
+        }).eq('user_id', user.id);
 
-      await updateStreak();
+        await updateStreak();
+      }
 
       toast({
-        title: 'Session Complete! 🎉',
-        description: `You completed ${exercisesCompleted} exercises with ${Math.round(finalAccuracy)}% accuracy.`,
+        title: exercisesCompleted > 0 ? 'Session Complete! 🎉' : 'Session Ended',
+        description: exercisesCompleted > 0 
+          ? `You completed ${exercisesCompleted} exercises with ${Math.round(finalAccuracy)}% accuracy.`
+          : 'No exercises were completed this session.',
       });
     } catch (error) {
       console.error('Error saving session:', error);
     }
-  }, [user, isComplete, duration, exercisesCompleted, exercises.length, accuracyScores, profile]);
+  }, [user, isComplete, duration, exercisesCompleted, exercises.length, accuracyScores, profile, currentSessionId, sessionCreated]);
+
+  // Create session record on first exercise completion (not at end of timer)
+  const createOrGetSessionId = async (): Promise<string | null> => {
+    if (!user) return null;
+    
+    // If session already exists, return it
+    if (currentSessionId) return currentSessionId;
+    
+    try {
+      const { data: sessionData, error: sessionError } = await supabase
+        .from('sessions')
+        .insert({
+          user_id: user.id,
+          duration_minutes: duration,
+          exercises_completed: 0,
+          total_exercises: exercises.length,
+          accuracy_score: 0,
+        })
+        .select('id')
+        .single();
+
+      if (sessionError) {
+        console.error('Error creating session:', sessionError);
+        return null;
+      }
+      
+      if (sessionData) {
+        setCurrentSessionId(sessionData.id);
+        setSessionCreated(true);
+        return sessionData.id;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error creating session:', error);
+      return null;
+    }
+  };
+
+  // Update session stats in real-time
+  const updateSessionStats = async (sessionId: string, newScore: number) => {
+    if (!user || !sessionId) return;
+    
+    try {
+      // Get current session data to calculate new average
+      const { data: currentSession } = await supabase
+        .from('sessions')
+        .select('exercises_completed, accuracy_score')
+        .eq('id', sessionId)
+        .single();
+      
+      if (currentSession) {
+        const currentCompleted = currentSession.exercises_completed || 0;
+        const currentAccuracy = currentSession.accuracy_score || 0;
+        
+        // Calculate new average accuracy
+        const newCompleted = currentCompleted + 1;
+        const newAvgAccuracy = ((currentAccuracy * currentCompleted) + newScore) / newCompleted;
+        
+        await supabase
+          .from('sessions')
+          .update({
+            exercises_completed: newCompleted,
+            accuracy_score: Math.round(newAvgAccuracy * 100) / 100,
+          })
+          .eq('id', sessionId);
+        
+        console.log(`Session updated: ${newCompleted} exercises, ${Math.round(newAvgAccuracy)}% avg accuracy`);
+      }
+    } catch (error) {
+      console.error('Error updating session stats:', error);
+    }
+  };
 
   const saveExerciseResult = async (result: SpeechAnalysisResult, exerciseText: string) => {
     if (!user) return;
     
     try {
+      // Create session if it doesn't exist yet
+      const sessionId = await createOrGetSessionId();
+      
+      // Save the exercise result immediately
       await supabase.from('exercise_results').insert({
         user_id: user.id,
-        session_id: currentSessionId,
+        session_id: sessionId,
         exercise_text: exerciseText,
         recognized_text: result.recognizedText,
         score: result.pronunciationScore,
         feedback: result.feedbackMessage,
         improvement_tip: result.improvementTip,
       });
-      console.log('Exercise result saved successfully');
+      
+      // Update session stats in real-time
+      if (sessionId) {
+        await updateSessionStats(sessionId, result.pronunciationScore);
+      }
+      
+      // Increment local completed count immediately
+      setExercisesCompleted(prev => prev + 1);
+      setAccuracyScores(prev => [...prev, result.pronunciationScore]);
+      
+      console.log('Exercise result saved and session updated immediately');
     } catch (error) {
       console.error('Error saving exercise result:', error);
     }
@@ -227,10 +324,7 @@ const TherapySession = () => {
   };
 
   const handleFeedbackContinue = () => {
-    if (currentFeedback) {
-      setAccuracyScores(prev => [...prev, currentFeedback.pronunciationScore]);
-    }
-    setExercisesCompleted(prev => prev + 1);
+    // Stats already saved in saveExerciseResult, just navigate to next exercise
     setShowFeedback(false);
     setCurrentFeedback(null);
     resetRecording();
