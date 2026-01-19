@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -21,17 +21,18 @@ const RoleContext = createContext<RoleContextType>({
 export const useRole = () => useContext(RoleContext);
 
 export const RoleProvider = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchRoles = async () => {
+  const fetchRoles = useCallback(async () => {
     if (!user) {
       setRoles([]);
       setIsLoading(false);
       return;
     }
 
+    setIsLoading(true);
     try {
       const { data, error } = await supabase
         .from('user_roles')
@@ -50,11 +51,26 @@ export const RoleProvider = ({ children }: { children: React.ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchRoles();
   }, [user]);
+
+  // Fetch roles when user changes
+  useEffect(() => {
+    if (!authLoading) {
+      fetchRoles();
+    }
+  }, [user, authLoading, fetchRoles]);
+
+  // Re-fetch roles on window focus to ensure fresh data
+  useEffect(() => {
+    const handleFocus = () => {
+      if (user) {
+        fetchRoles();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [user, fetchRoles]);
 
   const isTherapist = roles.includes('therapist');
 

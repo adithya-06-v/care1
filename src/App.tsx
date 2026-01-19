@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { RoleProvider } from "@/hooks/useRole";
 import { SubscriptionProvider } from "@/hooks/useSubscription";
+import { ProtectedRoute } from "@/components/routing/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -15,6 +16,7 @@ import TherapySession from "./pages/TherapySession";
 import Progress from "./pages/Progress";
 import Achievements from "./pages/Achievements";
 import TherapistAdmin from "./pages/TherapistAdmin";
+import Unauthorized from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,12 +34,20 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/onboarding" element={<Onboarding />} />
+                <Route path="/unauthorized" element={<Unauthorized />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/therapy-session" element={<TherapySession />} />
                 <Route path="/progress" element={<Progress />} />
                 <Route path="/achievements" element={<Achievements />} />
-                <Route path="/therapist" element={<TherapistAdmin />} />
+                <Route 
+                  path="/therapist" 
+                  element={
+                    <ProtectedRoute requiredRole="therapist">
+                      <TherapistAdmin />
+                    </ProtectedRoute>
+                  } 
+                />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
