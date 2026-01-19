@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Stethoscope } from 'lucide-react';
 import { z } from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -12,6 +12,9 @@ const passwordSchema = z.string().min(6, 'Password must be at least 6 characters
 const nameSchema = z.string().min(2, 'Name must be at least 2 characters');
 
 const Auth = () => {
+  const [searchParams] = useSearchParams();
+  const isTherapistMode = searchParams.get('mode') === 'therapist';
+  
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,9 +27,23 @@ const Auth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkOnboardingStatus = async () => {
+    const checkUserStatusAndRedirect = async () => {
       if (!loading && user) {
-        // Check if user has completed onboarding
+        // Check if user is a therapist
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'therapist')
+          .maybeSingle();
+
+        if (roleData) {
+          // User is a therapist, redirect to admin panel
+          navigate('/therapist');
+          return;
+        }
+
+        // Regular user - check onboarding
         const { data } = await supabase
           .from('profiles')
           .select('onboarding_completed')
@@ -41,7 +58,7 @@ const Auth = () => {
       }
     };
 
-    checkOnboardingStatus();
+    checkUserStatusAndRedirect();
   }, [user, loading, navigate]);
 
   const validateForm = () => {
