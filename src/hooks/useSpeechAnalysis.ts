@@ -5,6 +5,7 @@ export interface SpeechAnalysisResult {
   recognizedText: string;
   pronunciationScore: number;
   feedbackMessage: string;
+  improvementTip: string;
   mispronounced: string[];
 }
 
@@ -52,6 +53,7 @@ export const useSpeechAnalysis = (): UseSpeechAnalysisReturn => {
         recognizedText: data.recognizedText,
         pronunciationScore: data.pronunciationScore,
         feedbackMessage: data.feedbackMessage,
+        improvementTip: data.improvementTip || '',
         mispronounced: data.mispronounced || [],
       };
 

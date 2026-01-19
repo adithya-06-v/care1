@@ -8,6 +8,7 @@ interface AIFeedbackProps {
   mispronounced: string[];
   suggestion: string;
   recognizedText?: string;
+  improvementTip?: string;
   onTryAgain: () => void;
   onContinue: () => void;
 }
@@ -17,6 +18,7 @@ export const AIFeedback = ({
   mispronounced, 
   suggestion,
   recognizedText,
+  improvementTip,
   onTryAgain, 
   onContinue 
 }: AIFeedbackProps) => {
@@ -82,14 +84,25 @@ export const AIFeedback = ({
         </div>
       )}
 
-      {/* Suggestion */}
+      {/* Feedback */}
       <div className="bg-primary/5 rounded-xl p-4">
         <div className="flex items-center gap-2 mb-2">
           <CheckCircle className="w-4 h-4 text-primary" />
-          <span className="text-sm font-medium text-foreground">Tip:</span>
+          <span className="text-sm font-medium text-foreground">Feedback:</span>
         </div>
         <p className="text-sm text-muted-foreground">{suggestion}</p>
       </div>
+
+      {/* Improvement Tip */}
+      {improvementTip && (
+        <div className="bg-accent/10 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <CheckCircle className="w-4 h-4 text-accent-foreground" />
+            <span className="text-sm font-medium text-foreground">Improvement Tip:</span>
+          </div>
+          <p className="text-sm text-muted-foreground">{improvementTip}</p>
+        </div>
+      )}
 
       {/* Actions */}
       <div className="flex gap-3 pt-2">
