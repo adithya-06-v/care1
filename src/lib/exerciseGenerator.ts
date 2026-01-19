@@ -89,6 +89,14 @@ interface UserProfile {
   difficulty: string | null;
 }
 
+// Adaptive data for exercise selection
+export interface AdaptiveData {
+  weakExercises: string[];
+  masteredExercises: string[];
+  weakPhonemes: string[];
+  currentDifficulty: 'beginner' | 'moderate' | 'severe';
+}
+
 // Map goal values to target goals
 const goalMapping: Record<string, string> = {
   pronunciation: 'pronunciation',
@@ -99,19 +107,47 @@ const goalMapping: Record<string, string> = {
   child_development: 'child_development',
 };
 
-// Generate personalized exercises based on user profile
+// Check if exercise matches weak phoneme patterns
+const matchesWeakPhoneme = (content: string, weakPhonemes: string[]): boolean => {
+  if (weakPhonemes.length === 0) return false;
+  
+  const lowerContent = content.toLowerCase();
+  const phonemePatterns: Record<string, RegExp> = {
+    'th': /th/g,
+    'sh': /sh/g,
+    'ch': /ch/g,
+    'str': /str/g,
+    'spl': /spl/g,
+    'scr': /scr/g,
+    'r_blend': /[bcdfgpt]r/g,
+    'l_blend': /[bcfgps]l/g,
+    'ng': /ng/g,
+    'nk': /nk/g,
+    'tion': /tion/g,
+    'ough': /ough/g,
+  };
+  
+  return weakPhonemes.some(phoneme => {
+    const regex = phonemePatterns[phoneme];
+    return regex ? regex.test(lowerContent) : false;
+  });
+};
+
+// Generate personalized exercises based on user profile and adaptive data
 export const generateExercises = (
   profile: UserProfile,
-  sessionDurationMinutes: number
+  sessionDurationMinutes: number,
+  adaptiveData?: AdaptiveData
 ): Exercise[] => {
   const exercises: Exercise[] = [];
   const allExercises = getAllExercises();
   
-  // Determine difficulty filter
-  const difficultyFilter = profile.difficulty || 'beginner';
-  const validDifficulties = difficultyFilter === 'severe' 
+  // Use adaptive difficulty if available, otherwise use profile
+  const effectiveDifficulty = adaptiveData?.currentDifficulty || profile.difficulty || 'beginner';
+  
+  const validDifficulties = effectiveDifficulty === 'severe' 
     ? ['beginner', 'moderate', 'severe']
-    : difficultyFilter === 'moderate'
+    : effectiveDifficulty === 'moderate'
     ? ['beginner', 'moderate']
     : ['beginner'];
 
@@ -148,18 +184,59 @@ export const generateExercises = (
   // Calculate number of exercises based on duration (approximately 2 minutes per exercise)
   const exerciseCount = Math.max(3, Math.ceil(sessionDurationMinutes / 2));
 
-  // Shuffle and select exercises
-  const shuffled = [...filteredExercises].sort(() => Math.random() - 0.5);
+  // Apply adaptive logic if data is available
+  if (adaptiveData) {
+    const { weakExercises, masteredExercises, weakPhonemes } = adaptiveData;
+    
+    // Prioritize: weak exercises > exercises with weak phonemes > new exercises > mastered (exclude)
+    const prioritizedExercises: Omit<Exercise, 'id'>[] = [];
+    const normalExercises: Omit<Exercise, 'id'>[] = [];
+    
+    filteredExercises.forEach(ex => {
+      // Skip mastered exercises (don't repeat too often)
+      if (masteredExercises.includes(ex.content)) {
+        // Include mastered only 20% of the time for variety
+        if (Math.random() > 0.2) return;
+      }
+      
+      // Prioritize weak exercises
+      if (weakExercises.includes(ex.content)) {
+        prioritizedExercises.push(ex);
+        return;
+      }
+      
+      // Prioritize exercises with weak phoneme patterns
+      if (matchesWeakPhoneme(ex.content, weakPhonemes)) {
+        prioritizedExercises.push(ex);
+        return;
+      }
+      
+      normalExercises.push(ex);
+    });
+    
+    // Shuffle within categories
+    const shuffledPriority = prioritizedExercises.sort(() => Math.random() - 0.5);
+    const shuffledNormal = normalExercises.sort(() => Math.random() - 0.5);
+    
+    // Combine: prioritized first, then normal
+    filteredExercises = [...shuffledPriority, ...shuffledNormal];
+  } else {
+    // No adaptive data, just shuffle
+    filteredExercises = [...filteredExercises].sort(() => Math.random() - 0.5);
+  }
   
   // If we need more exercises than available, repeat some
-  while (shuffled.length < exerciseCount) {
-    shuffled.push(...filteredExercises.sort(() => Math.random() - 0.5));
+  while (filteredExercises.length < exerciseCount) {
+    const originalFiltered = allExercises.filter(ex => 
+      validDifficulties.includes(ex.difficulty) && targetGoals.includes(ex.targetGoal)
+    );
+    filteredExercises.push(...originalFiltered.sort(() => Math.random() - 0.5));
   }
 
   // Select the required number
-  for (let i = 0; i < Math.min(exerciseCount, shuffled.length); i++) {
+  for (let i = 0; i < Math.min(exerciseCount, filteredExercises.length); i++) {
     exercises.push({
-      ...shuffled[i],
+      ...filteredExercises[i],
       id: `exercise-${i}-${Date.now()}`,
     });
   }

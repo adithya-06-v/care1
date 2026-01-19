@@ -175,6 +175,87 @@ export type Database = {
         }
         Relationships: []
       }
+      user_difficulty_progress: {
+        Row: {
+          avg_session_score: number | null
+          created_at: string
+          current_difficulty: string
+          difficulty_adjusted_at: string | null
+          id: string
+          sessions_at_current_level: number | null
+          total_mastered: number | null
+          total_weak: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avg_session_score?: number | null
+          created_at?: string
+          current_difficulty?: string
+          difficulty_adjusted_at?: string | null
+          id?: string
+          sessions_at_current_level?: number | null
+          total_mastered?: number | null
+          total_weak?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avg_session_score?: number | null
+          created_at?: string
+          current_difficulty?: string
+          difficulty_adjusted_at?: string | null
+          id?: string
+          sessions_at_current_level?: number | null
+          total_mastered?: number | null
+          total_weak?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_exercise_progress: {
+        Row: {
+          average_score: number | null
+          created_at: string
+          exercise_text: string
+          id: string
+          last_practiced_at: string | null
+          mastery_status: string
+          phoneme_pattern: string | null
+          successful_attempts: number
+          total_attempts: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          average_score?: number | null
+          created_at?: string
+          exercise_text: string
+          id?: string
+          last_practiced_at?: string | null
+          mastery_status?: string
+          phoneme_pattern?: string | null
+          successful_attempts?: number
+          total_attempts?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          average_score?: number | null
+          created_at?: string
+          exercise_text?: string
+          id?: string
+          last_practiced_at?: string | null
+          mastery_status?: string
+          phoneme_pattern?: string | null
+          successful_attempts?: number
+          total_attempts?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
