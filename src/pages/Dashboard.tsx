@@ -21,6 +21,9 @@ import {
 import { toast } from '@/hooks/use-toast';
 import { RecommendedSession } from '@/components/dashboard/RecommendedSession';
 import { LanguageDialog } from '@/components/dashboard/LanguageDialog';
+import { WeeklyChart } from '@/components/dashboard/WeeklyChart';
+import { MispronounedWords } from '@/components/dashboard/MispronounedWords';
+import { PerformanceBadge } from '@/components/dashboard/PerformanceBadge';
 
 interface Profile {
   full_name: string | null;
@@ -92,17 +95,20 @@ const Dashboard = () => {
           setSelectedLanguage(profileData.preferred_language || 'English');
         }
 
-        // Fetch session stats
+        // Fetch session stats from sessions table for accurate data
         const { data: sessionsData, error: sessionsError } = await supabase
           .from('sessions')
-          .select('duration_minutes, accuracy_score')
+          .select('duration_minutes, accuracy_score, exercises_completed')
           .eq('user_id', user.id);
 
         if (sessionsData && !sessionsError) {
           const totalSessions = sessionsData.length;
           const totalMinutes = sessionsData.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
-          const avgAccuracy = totalSessions > 0
-            ? sessionsData.reduce((sum, s) => sum + (Number(s.accuracy_score) || 0), 0) / totalSessions
+          
+          // Only count sessions with exercises completed for accuracy
+          const sessionsWithExercises = sessionsData.filter(s => (s.exercises_completed || 0) > 0);
+          const avgAccuracy = sessionsWithExercises.length > 0
+            ? sessionsWithExercises.reduce((sum, s) => sum + (Number(s.accuracy_score) || 0), 0) / sessionsWithExercises.length
             : 0;
 
           setSessionStats({
@@ -194,13 +200,17 @@ const Dashboard = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            Welcome back, {firstName}! 👋
-          </h1>
-          <p className="text-muted-foreground">
-            Ready to continue your speech therapy journey?
-          </p>
+        <div className="mb-8 flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground mb-2">
+              Welcome back, {firstName}! 👋
+            </h1>
+            <p className="text-muted-foreground">
+              Ready to continue your speech therapy journey?
+            </p>
+          </div>
+          {/* Performance Badge */}
+          <PerformanceBadge averageScore={sessionStats.averageAccuracy} />
         </div>
 
         {/* Stats Cards */}
@@ -260,6 +270,15 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Analytics Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Weekly Chart */}
+          <WeeklyChart userId={user.id} />
+          
+          {/* Mispronounced Words */}
+          <MispronounedWords userId={user.id} />
         </div>
 
         {/* Recommended Session */}
