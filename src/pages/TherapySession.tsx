@@ -32,6 +32,7 @@ import {
   getUserDifficultyProgress
 } from '@/lib/adaptiveDifficulty';
 import { getWeakSoundsForExercises, SOUND_PATTERNS, SoundPattern } from '@/lib/weakSoundAnalysis';
+import { TherapyMode } from '@/lib/therapyModes';
 
 interface ProfileData {
   age_group: string | null;
@@ -43,6 +44,7 @@ interface ProfileData {
   current_streak: number | null;
   longest_streak: number | null;
   last_session_date: string | null;
+  therapy_mode: TherapyMode | null;
 }
 
 const TherapySession = () => {
@@ -82,12 +84,15 @@ const TherapySession = () => {
         // Fetch profile
         const { data, error } = await supabase
           .from('profiles')
-          .select('age_group, preferred_language, goals, difficulty, therapy_sessions_completed, total_practice_minutes, current_streak, longest_streak, last_session_date')
+          .select('age_group, preferred_language, goals, difficulty, therapy_sessions_completed, total_practice_minutes, current_streak, longest_streak, last_session_date, therapy_mode')
           .eq('user_id', user.id)
           .maybeSingle();
 
         if (data && !error) {
-          setProfile(data);
+          setProfile({
+            ...data,
+            therapy_mode: (data.therapy_mode as TherapyMode) || 'pronunciation',
+          });
           
           // Fetch adaptive data for exercise generation
           const [weakExercises, masteredExercises, weakPhonemes, difficultyProgress, weakSounds] = await Promise.all([
@@ -606,6 +611,7 @@ const TherapySession = () => {
                 incorrectWords={currentFeedback.incorrectWords}
                 needsWordDrill={currentFeedback.needsWordDrill}
                 expectedText={exercises[currentExerciseIndex]?.content}
+                therapyMode={profile?.therapy_mode || 'pronunciation'}
                 onTryAgain={handleTryAgain}
                 onContinue={handleFeedbackContinue}
                 onWordDrill={handleWordDrill}

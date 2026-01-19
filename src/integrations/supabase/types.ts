@@ -102,6 +102,7 @@ export type Database = {
           longest_streak: number | null
           onboarding_completed: boolean | null
           preferred_language: string | null
+          therapy_mode: string | null
           therapy_sessions_completed: number | null
           total_practice_minutes: number | null
           updated_at: string
@@ -120,6 +121,7 @@ export type Database = {
           longest_streak?: number | null
           onboarding_completed?: boolean | null
           preferred_language?: string | null
+          therapy_mode?: string | null
           therapy_sessions_completed?: number | null
           total_practice_minutes?: number | null
           updated_at?: string
@@ -138,6 +140,7 @@ export type Database = {
           longest_streak?: number | null
           onboarding_completed?: boolean | null
           preferred_language?: string | null
+          therapy_mode?: string | null
           therapy_sessions_completed?: number | null
           total_practice_minutes?: number | null
           updated_at?: string

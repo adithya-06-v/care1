@@ -99,6 +99,7 @@ interface UserProfile {
   preferred_language: string | null;
   goals: string[] | null;
   difficulty: string | null;
+  therapy_mode?: string | null;
 }
 
 // Adaptive data for exercise selection
@@ -202,13 +203,32 @@ export const generateExercises = (
     ? ['beginner', 'moderate']
     : ['beginner'];
 
-  // Determine target goals
-  const userGoals = profile.goals || ['pronunciation'];
-  const targetGoals = userGoals.map(g => goalMapping[g] || g);
+  // Determine target goals based on therapy mode
+  const therapyMode = profile.therapy_mode || 'pronunciation';
+  const modeGoalMapping: Record<string, string[]> = {
+    pronunciation: ['pronunciation', 'vocabulary'],
+    fluency: ['fluency', 'confidence'],
+    child_development: ['child_development', 'pronunciation', 'vocabulary'],
+    accent: ['accent', 'pronunciation', 'confidence'],
+  };
+  
+  // Start with mode-specific goals
+  let targetGoals = modeGoalMapping[therapyMode] || ['pronunciation'];
+  
+  // Also include user's selected goals for more variety
+  const userGoals = profile.goals || [];
+  userGoals.forEach(g => {
+    const mapped = goalMapping[g] || g;
+    if (!targetGoals.includes(mapped)) {
+      targetGoals.push(mapped);
+    }
+  });
 
-  // Add child exercises if age group is child
-  if (profile.age_group === 'child') {
-    targetGoals.push('child_development');
+  // Add child exercises if age group is child or mode is child_development
+  if (profile.age_group === 'child' || therapyMode === 'child_development') {
+    if (!targetGoals.includes('child_development')) {
+      targetGoals.push('child_development');
+    }
   }
 
   // Filter exercises based on profile
