@@ -12,17 +12,29 @@ export interface Exercise {
 
 // Exercise banks by category
 const pronunciationExercises: Omit<Exercise, 'id'>[] = [
-  // Beginner
+  // Beginner - Words
   { type: 'word_repetition', title: 'Simple Sounds', instruction: 'Repeat each word slowly and clearly', content: 'Cat, Dog, Sun, Moon, Ball', difficulty: 'beginner', targetGoal: 'pronunciation' },
   { type: 'pronunciation', title: 'Vowel Practice', instruction: 'Say each vowel sound three times', content: 'A - E - I - O - U', difficulty: 'beginner', targetGoal: 'pronunciation' },
   { type: 'syllable_drill', title: 'Two Syllable Words', instruction: 'Break these words into syllables as you say them', content: 'Hap-py, Ta-ble, Win-dow, Ap-ple, Mon-key', difficulty: 'beginner', targetGoal: 'pronunciation' },
-  // Moderate
+  // Beginner - Sentences
+  { type: 'sentence_reading', title: 'Simple Sentence', instruction: 'Read this sentence clearly', content: 'The cat sat on the mat', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Basic Greeting', instruction: 'Practice this common greeting', content: 'Hello, how are you today', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Daily Sentence', instruction: 'Read naturally and clearly', content: 'I like to eat apples and bananas', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  // Moderate - Words
   { type: 'tongue_twister', title: 'Tongue Twister', instruction: 'Read slowly first, then increase speed', content: 'She sells seashells by the seashore', difficulty: 'moderate', targetGoal: 'pronunciation' },
   { type: 'word_repetition', title: 'Complex Sounds', instruction: 'Focus on the highlighted sounds', content: 'Strength, Rhythm, Twelfth, Clothes, Months', difficulty: 'moderate', targetGoal: 'pronunciation' },
-  { type: 'sentence_reading', title: 'Sentence Flow', instruction: 'Read naturally with proper pauses', content: 'The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs.', difficulty: 'moderate', targetGoal: 'pronunciation' },
-  // Severe
-  { type: 'tongue_twister', title: 'Advanced Tongue Twister', instruction: 'Master this challenging phrase', content: 'Peter Piper picked a peck of pickled peppers. A peck of pickled peppers Peter Piper picked.', difficulty: 'severe', targetGoal: 'pronunciation' },
+  // Moderate - Sentences
+  { type: 'sentence_reading', title: 'Sentence Flow', instruction: 'Read naturally with proper pauses', content: 'The quick brown fox jumps over the lazy dog', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Descriptive Sentence', instruction: 'Focus on clear pronunciation of each word', content: 'The beautiful garden has many colorful flowers', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Action Sentence', instruction: 'Maintain a steady pace throughout', content: 'She quickly ran to catch the bus before it left', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Question Practice', instruction: 'Use proper rising intonation for questions', content: 'Would you like to come with me to the store', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  // Severe - Words
+  { type: 'tongue_twister', title: 'Advanced Tongue Twister', instruction: 'Master this challenging phrase', content: 'Peter Piper picked a peck of pickled peppers', difficulty: 'severe', targetGoal: 'pronunciation' },
   { type: 'pronunciation', title: 'Consonant Clusters', instruction: 'Practice these difficult consonant combinations', content: 'Strengths, Glimpsed, Sculpts, Twelfths, Prompts', difficulty: 'severe', targetGoal: 'pronunciation' },
+  // Severe - Sentences
+  { type: 'sentence_reading', title: 'Complex Sentence', instruction: 'Read this longer sentence clearly and naturally', content: 'The experienced teacher explained the complicated mathematical concept to her eager students', difficulty: 'severe', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Professional Speech', instruction: 'Speak clearly as if in a presentation', content: 'We are pleased to announce the successful completion of our quarterly objectives', difficulty: 'severe', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Narrative Sentence', instruction: 'Read with proper expression and pacing', content: 'After walking through the mysterious forest, they discovered an ancient hidden temple', difficulty: 'severe', targetGoal: 'pronunciation' },
 ];
 
 const fluencyExercises: Omit<Exercise, 'id'>[] = [

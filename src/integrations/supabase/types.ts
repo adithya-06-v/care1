@@ -145,6 +145,59 @@ export type Database = {
         }
         Relationships: []
       }
+      sentence_performance: {
+        Row: {
+          accuracy_score: number | null
+          correct_words: number
+          created_at: string
+          id: string
+          incorrect_words: string[] | null
+          needs_word_drill: boolean | null
+          recognized_text: string | null
+          sentence_text: string
+          session_id: string | null
+          skipped_words: string[] | null
+          user_id: string
+          word_count: number
+        }
+        Insert: {
+          accuracy_score?: number | null
+          correct_words?: number
+          created_at?: string
+          id?: string
+          incorrect_words?: string[] | null
+          needs_word_drill?: boolean | null
+          recognized_text?: string | null
+          sentence_text: string
+          session_id?: string | null
+          skipped_words?: string[] | null
+          user_id: string
+          word_count?: number
+        }
+        Update: {
+          accuracy_score?: number | null
+          correct_words?: number
+          created_at?: string
+          id?: string
+          incorrect_words?: string[] | null
+          needs_word_drill?: boolean | null
+          recognized_text?: string | null
+          sentence_text?: string
+          session_id?: string | null
+          skipped_words?: string[] | null
+          user_id?: string
+          word_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sentence_performance_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sessions: {
         Row: {
           accuracy_score: number | null
