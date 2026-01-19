@@ -17,7 +17,8 @@ import {
   Target,
   User,
   Flame,
-  Plus
+  Plus,
+  Sparkles
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { RecommendedSession } from '@/components/dashboard/RecommendedSession';
@@ -29,6 +30,13 @@ import { TodaysFocus } from '@/components/dashboard/TodaysFocus';
 import { TherapyModeSelector } from '@/components/dashboard/TherapyModeSelector';
 import { UpgradeBanner } from '@/components/subscription/UpgradeBanner';
 import { TherapyMode } from '@/lib/therapyModes';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 
 interface Profile {
   full_name: string | null;
@@ -40,6 +48,7 @@ interface Profile {
   age_group: string | null;
   current_streak: number;
   therapy_mode: TherapyMode | null;
+  pro_popup_seen: boolean;
 }
 
 interface SessionStats {
@@ -50,7 +59,7 @@ interface SessionStats {
 
 const Dashboard = () => {
   const { user, loading, signOut } = useAuth();
-  const { isPro, refreshSubscription } = useSubscription();
+  const { isPro, refreshSubscription, isLoading: subscriptionLoading } = useSubscription();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -58,6 +67,7 @@ const Dashboard = () => {
   const [sessionDuration, setSessionDuration] = useState('');
   const [languageDialogOpen, setLanguageDialogOpen] = useState(false);
   const languageSectionRef = useRef<HTMLDivElement>(null);
+  const [showProWelcome, setShowProWelcome] = useState(false);
   const [sessionStats, setSessionStats] = useState<SessionStats>({
     totalSessions: 0,
     totalMinutes: 0,
@@ -108,10 +118,10 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchProfileAndStats = async () => {
       if (user) {
-        // Fetch profile
+        // Fetch profile including pro_popup_seen
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('full_name, preferred_language, therapy_sessions_completed, total_practice_minutes, goals, difficulty, age_group, current_streak, therapy_mode')
+          .select('full_name, preferred_language, therapy_sessions_completed, total_practice_minutes, goals, difficulty, age_group, current_streak, therapy_mode, pro_popup_seen')
           .eq('user_id', user.id)
           .maybeSingle();
         
@@ -120,6 +130,7 @@ const Dashboard = () => {
             ...profileData,
             current_streak: profileData.current_streak || 0,
             therapy_mode: (profileData.therapy_mode as TherapyMode) || 'pronunciation',
+            pro_popup_seen: profileData.pro_popup_seen ?? false,
           });
           setSelectedLanguage(profileData.preferred_language || 'English');
         }
@@ -153,6 +164,29 @@ const Dashboard = () => {
       fetchProfileAndStats();
     }
   }, [user]);
+
+  // Pro welcome popup logic - check after subscription and profile load
+  useEffect(() => {
+    const checkAndShowProPopup = async () => {
+      if (!user || subscriptionLoading || !profile) return;
+      
+      // Only show if user is Pro and hasn't seen the popup
+      if (isPro && !profile.pro_popup_seen) {
+        setShowProWelcome(true);
+        
+        // Mark as seen in Supabase immediately
+        await supabase
+          .from('profiles')
+          .update({ pro_popup_seen: true })
+          .eq('user_id', user.id);
+        
+        // Update local state
+        setProfile(prev => prev ? { ...prev, pro_popup_seen: true } : null);
+      }
+    };
+
+    checkAndShowProPopup();
+  }, [user, isPro, subscriptionLoading, profile?.pro_popup_seen]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -480,6 +514,47 @@ const Dashboard = () => {
           userId={user.id}
         />
       )}
+
+      {/* Pro Welcome Modal */}
+      <Dialog open={showProWelcome} onOpenChange={setShowProWelcome}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-2xl">
+              <Sparkles className="w-6 h-6 text-primary" />
+              Welcome to Pro! 🎉
+            </DialogTitle>
+            <DialogDescription className="text-base pt-2">
+              You now have access to all premium features:
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <Trophy className="w-4 h-4 text-primary" />
+              </div>
+              <span className="text-foreground">Unlimited therapy sessions</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <BarChart3 className="w-4 h-4 text-primary" />
+              </div>
+              <span className="text-foreground">Advanced analytics & reports</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <Target className="w-4 h-4 text-primary" />
+              </div>
+              <span className="text-foreground">Priority AI feedback</span>
+            </div>
+          </div>
+          <Button 
+            onClick={() => setShowProWelcome(false)} 
+            className="w-full rounded-pill"
+          >
+            Get Started
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
