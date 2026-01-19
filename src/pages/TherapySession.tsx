@@ -314,6 +314,27 @@ const TherapySession = () => {
         improvement_tip: result.improvementTip,
       });
       
+      // Save sentence performance separately if it's a sentence
+      if (result.isSentence) {
+        const wordCount = exerciseText.split(/\s+/).filter(Boolean).length;
+        const correctWords = result.wordAnalysis.filter(w => w.status === 'correct').length;
+        
+        await supabase.from('sentence_performance').insert({
+          user_id: user.id,
+          session_id: sessionId,
+          sentence_text: exerciseText,
+          recognized_text: result.recognizedText,
+          accuracy_score: result.pronunciationScore,
+          word_count: wordCount,
+          correct_words: correctWords,
+          skipped_words: result.skippedWords,
+          incorrect_words: result.incorrectWords,
+          needs_word_drill: result.needsWordDrill,
+        });
+        
+        console.log(`Sentence performance saved: ${correctWords}/${wordCount} words correct`);
+      }
+      
       // Update session stats in real-time
       if (sessionId) {
         await updateSessionStats(sessionId, result.pronunciationScore);
@@ -334,6 +355,39 @@ const TherapySession = () => {
     } catch (error) {
       console.error('Error saving exercise result:', error);
     }
+  };
+
+  // Handle word drill - insert word exercises into the session
+  const handleWordDrill = (words: string[]) => {
+    if (words.length === 0) return;
+    
+    // Create word exercises from the problem words
+    const wordExercises: Exercise[] = words.map((word, index) => ({
+      id: `word-drill-${index}-${Date.now()}`,
+      type: 'word_repetition' as const,
+      title: 'Word Practice',
+      instruction: 'Practice this word clearly and slowly',
+      content: word,
+      difficulty: 'beginner' as const,
+      targetGoal: 'pronunciation',
+    }));
+    
+    // Insert word exercises after current exercise
+    const newExercises = [...exercises];
+    newExercises.splice(currentExerciseIndex + 1, 0, ...wordExercises);
+    setExercises(newExercises);
+    
+    // Move to next exercise (first word drill)
+    setShowFeedback(false);
+    setCurrentFeedback(null);
+    resetRecording();
+    resetAnalysis();
+    setCurrentExerciseIndex(prev => prev + 1);
+    
+    toast({
+      title: `Word Drill Started`,
+      description: `Let's practice ${words.length} word${words.length > 1 ? 's' : ''} individually.`,
+    });
   };
 
   const handleRecordingComplete = async () => {
@@ -493,8 +547,15 @@ const TherapySession = () => {
                 suggestion={currentFeedback.feedbackMessage}
                 recognizedText={currentFeedback.recognizedText}
                 improvementTip={currentFeedback.improvementTip}
+                isSentence={currentFeedback.isSentence}
+                wordAnalysis={currentFeedback.wordAnalysis}
+                skippedWords={currentFeedback.skippedWords}
+                incorrectWords={currentFeedback.incorrectWords}
+                needsWordDrill={currentFeedback.needsWordDrill}
+                expectedText={exercises[currentExerciseIndex]?.content}
                 onTryAgain={handleTryAgain}
                 onContinue={handleFeedbackContinue}
+                onWordDrill={handleWordDrill}
               />
             </motion.div>
           ) : (
