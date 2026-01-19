@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Stethoscope } from "lucide-react";
 
 const navLinks = [
   { name: "Services", href: "#services" },
@@ -20,6 +20,10 @@ const Navbar = () => {
 
   const handleLogin = () => {
     navigate('/auth');
+  };
+
+  const handleTherapistLogin = () => {
+    navigate('/auth?mode=therapist');
   };
 
   return (
@@ -48,7 +52,15 @@ const Navbar = () => {
           </div>
 
           {/* Desktop CTA */}
-          <div className="hidden lg:flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-3">
+            <Button 
+              variant="ghost" 
+              className="text-muted-foreground hover:text-foreground gap-2" 
+              onClick={handleTherapistLogin}
+            >
+              <Stethoscope className="w-4 h-4" />
+              Therapist Login
+            </Button>
             <Button variant="ghost" className="text-muted-foreground hover:text-foreground" onClick={handleLogin}>
               Login
             </Button>
@@ -82,6 +94,14 @@ const Navbar = () => {
                 </a>
               ))}
               <div className="flex flex-col gap-3 pt-4 border-t border-border">
+                <Button 
+                  variant="ghost" 
+                  className="justify-start text-muted-foreground gap-2" 
+                  onClick={handleTherapistLogin}
+                >
+                  <Stethoscope className="w-4 h-4" />
+                  Therapist Login
+                </Button>
                 <Button variant="ghost" className="justify-start text-muted-foreground" onClick={handleLogin}>
                   Login
                 </Button>
