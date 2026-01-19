@@ -107,6 +107,7 @@ export interface AdaptiveData {
   masteredExercises: string[];
   weakPhonemes: string[];
   currentDifficulty: 'beginner' | 'moderate' | 'severe';
+  weakSounds?: string[]; // Sounds that need extra practice (e.g., 'r', 'th', 'sh')
 }
 
 // Map goal values to target goals
@@ -142,6 +143,44 @@ const matchesWeakPhoneme = (content: string, weakPhonemes: string[]): boolean =>
   return weakPhonemes.some(phoneme => {
     const regex = phonemePatterns[phoneme];
     return regex ? regex.test(lowerContent) : false;
+  });
+};
+
+// Check if exercise contains weak sounds (single letters/sounds)
+const containsWeakSound = (content: string, weakSounds: string[]): boolean => {
+  if (!weakSounds || weakSounds.length === 0) return false;
+  
+  const lowerContent = content.toLowerCase();
+  
+  return weakSounds.some(sound => {
+    // Create appropriate regex for each sound type
+    const soundPatterns: Record<string, RegExp> = {
+      'r': /r/gi,
+      'l': /l/gi,
+      's': /s/gi,
+      'th': /th/gi,
+      'sh': /sh/gi,
+      'ch': /ch|tch/gi,
+      'k': /k|c(?![eiy])/gi,
+      'g': /g(?![eiy])/gi,
+      'f': /f|ph/gi,
+      'v': /v/gi,
+      'z': /z/gi,
+      'j': /j|g[eiy]|dge/gi,
+      'w': /w/gi,
+      'y': /y/gi,
+      'p': /p/gi,
+      'b': /b/gi,
+      't': /t(?!h)/gi,
+      'd': /d/gi,
+      'm': /m/gi,
+      'n': /n(?!g)/gi,
+      'ng': /ng/gi,
+      'h': /h/gi,
+    };
+    
+    const regex = soundPatterns[sound];
+    return regex ? regex.test(lowerContent) : lowerContent.includes(sound);
   });
 };
 
@@ -198,9 +237,10 @@ export const generateExercises = (
 
   // Apply adaptive logic if data is available
   if (adaptiveData) {
-    const { weakExercises, masteredExercises, weakPhonemes } = adaptiveData;
+    const { weakExercises, masteredExercises, weakPhonemes, weakSounds } = adaptiveData;
     
-    // Prioritize: weak exercises > exercises with weak phonemes > new exercises > mastered (exclude)
+    // Prioritize: weak exercises > exercises with weak sounds > exercises with weak phonemes > new exercises > mastered (exclude)
+    const highPriorityExercises: Omit<Exercise, 'id'>[] = [];
     const prioritizedExercises: Omit<Exercise, 'id'>[] = [];
     const normalExercises: Omit<Exercise, 'id'>[] = [];
     
@@ -211,13 +251,19 @@ export const generateExercises = (
         if (Math.random() > 0.2) return;
       }
       
-      // Prioritize weak exercises
+      // Highest priority: weak exercises from user history
       if (weakExercises.includes(ex.content)) {
+        highPriorityExercises.push(ex);
+        return;
+      }
+      
+      // High priority: exercises containing weak sounds (from sound analysis)
+      if (weakSounds && containsWeakSound(ex.content, weakSounds)) {
         prioritizedExercises.push(ex);
         return;
       }
       
-      // Prioritize exercises with weak phoneme patterns
+      // Medium priority: exercises with weak phoneme patterns
       if (matchesWeakPhoneme(ex.content, weakPhonemes)) {
         prioritizedExercises.push(ex);
         return;
@@ -227,11 +273,12 @@ export const generateExercises = (
     });
     
     // Shuffle within categories
+    const shuffledHighPriority = highPriorityExercises.sort(() => Math.random() - 0.5);
     const shuffledPriority = prioritizedExercises.sort(() => Math.random() - 0.5);
     const shuffledNormal = normalExercises.sort(() => Math.random() - 0.5);
     
-    // Combine: prioritized first, then normal
-    filteredExercises = [...shuffledPriority, ...shuffledNormal];
+    // Combine: highest priority first, then prioritized, then normal
+    filteredExercises = [...shuffledHighPriority, ...shuffledPriority, ...shuffledNormal];
   } else {
     // No adaptive data, just shuffle
     filteredExercises = [...filteredExercises].sort(() => Math.random() - 0.5);

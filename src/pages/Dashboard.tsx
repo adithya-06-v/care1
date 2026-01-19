@@ -24,6 +24,7 @@ import { LanguageDialog } from '@/components/dashboard/LanguageDialog';
 import { WeeklyChart } from '@/components/dashboard/WeeklyChart';
 import { MispronounedWords } from '@/components/dashboard/MispronounedWords';
 import { PerformanceBadge } from '@/components/dashboard/PerformanceBadge';
+import { TodaysFocus } from '@/components/dashboard/TodaysFocus';
 
 interface Profile {
   full_name: string | null;
@@ -270,6 +271,11 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Today's Focus - Sound Reinforcement */}
+        <div className="mb-8">
+          <TodaysFocus userId={user.id} />
         </div>
 
         {/* Analytics Section */}
