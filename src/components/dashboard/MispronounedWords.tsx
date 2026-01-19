@@ -23,7 +23,8 @@ export const MispronounedWords = ({ userId }: MispronounedWordsProps) => {
 
   useEffect(() => {
     const fetchWeakWords = async () => {
-      // Get all exercise results with low scores
+      setIsLoading(true);
+      // Get all exercise results with low scores (< 70)
       const { data, error } = await supabase
         .from('exercise_results')
         .select('exercise_text, score')
@@ -37,11 +38,11 @@ export const MispronounedWords = ({ userId }: MispronounedWordsProps) => {
         return;
       }
 
-      // Aggregate by exercise text
+      // Group by exercise_text and count mispronunciations
       const wordMap = new Map<string, { total: number; count: number }>();
       
       data?.forEach(result => {
-        const text = result.exercise_text.toLowerCase().trim();
+        const text = result.exercise_text.trim();
         const existing = wordMap.get(text) || { total: 0, count: 0 };
         wordMap.set(text, {
           total: existing.total + (Number(result.score) || 0),
@@ -49,7 +50,7 @@ export const MispronounedWords = ({ userId }: MispronounedWordsProps) => {
         });
       });
 
-      // Convert to array and sort by frequency
+      // Convert to array and sort by frequency (most mispronounced first)
       const words: WeakWord[] = [];
       wordMap.forEach((value, key) => {
         words.push({
@@ -59,16 +60,39 @@ export const MispronounedWords = ({ userId }: MispronounedWordsProps) => {
         });
       });
 
-      // Sort by attempts (most frequent issues first)
+      // Sort by mispronunciation count (highest first)
       words.sort((a, b) => b.attempts - a.attempts);
       
-      setWeakWords(words.slice(0, 6));
+      // Top 5 most mispronounced
+      setWeakWords(words.slice(0, 5));
       setIsLoading(false);
     };
 
     if (userId) {
       fetchWeakWords();
     }
+
+    // Subscribe to realtime updates for automatic refresh
+    const channel = supabase
+      .channel('exercise_results_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'exercise_results',
+          filter: `user_id=eq.${userId}`,
+        },
+        () => {
+          // Refetch when new results are added
+          fetchWeakWords();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [userId]);
 
   const handlePracticeWeakWords = () => {
@@ -111,22 +135,22 @@ export const MispronounedWords = ({ userId }: MispronounedWordsProps) => {
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-foreground text-base">
           <AlertCircle className="w-5 h-5 text-orange-500" />
-          Words to Practice
+          Most Mispronounced Words
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="flex flex-wrap gap-2">
+        <div className="space-y-2">
           {weakWords.map((word, index) => (
             <div
               key={index}
-              className="flex items-center gap-2 px-3 py-1.5 bg-orange-500/10 rounded-lg"
+              className="flex items-center justify-between p-3 bg-orange-500/10 rounded-lg border border-orange-500/20"
             >
-              <span className="text-sm text-orange-600 font-medium truncate max-w-[120px]">
+              <span className="text-sm text-foreground font-medium">
                 {word.exercise_text}
               </span>
-              <Badge variant="outline" className="text-xs text-muted-foreground">
-                {word.avgScore}%
-              </Badge>
+              <span className="text-sm text-orange-600 font-medium">
+                {word.attempts} {word.attempts === 1 ? 'time' : 'times'}
+              </span>
             </div>
           ))}
         </div>
