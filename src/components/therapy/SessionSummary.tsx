@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { ProBadge } from '@/components/ui/pro-badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -174,7 +175,10 @@ export const SessionSummary = ({
       >
         <Card className="bg-card border-border shadow-card overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-primary to-primary/80 p-6 text-center">
+          <div className="bg-gradient-to-r from-primary to-primary/80 p-6 text-center relative">
+            <div className="absolute top-4 right-4">
+              <ProBadge size="md" />
+            </div>
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}

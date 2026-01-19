@@ -37,6 +37,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import { ProBadge } from '@/components/ui/pro-badge';
 
 interface Profile {
   full_name: string | null;
@@ -243,7 +244,8 @@ const Dashboard = () => {
             </div>
             <span className="text-xl font-bold text-foreground">CareVoice</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
++             <ProBadge size="md" />
             <Button 
               variant="ghost" 
               onClick={() => navigate('/profile')}

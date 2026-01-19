@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { ProBadge } from '@/components/ui/pro-badge';
 import { 
   ArrowLeft, 
   User, 
@@ -253,10 +254,13 @@ const Profile = () => {
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                 <User className="w-6 h-6 text-primary" />
               </div>
-              <div>
-                <p className="text-foreground font-medium">
-                  {profile?.full_name || 'User'}
-                </p>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="text-foreground font-medium">
+                    {profile?.full_name || 'User'}
+                  </p>
+                  <ProBadge size="sm" />
+                </div>
                 <p className="text-sm text-muted-foreground flex items-center gap-1">
                   <Mail className="w-3 h-3" />
                   {user.email}
