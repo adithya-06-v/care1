@@ -5,6 +5,8 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { WordAnalysis } from '@/hooks/useSpeechAnalysis';
 import { TherapyMode, getFeedbackLabel, getEncouragement, getTip } from '@/lib/therapyModes';
+import { EmotionAnalysis } from '@/lib/emotionDetection';
+import { EmotionFeedback } from './EmotionFeedback';
 
 interface AIFeedbackProps {
   score: number;
@@ -20,6 +22,8 @@ interface AIFeedbackProps {
   needsWordDrill?: boolean;
   expectedText?: string;
   therapyMode?: TherapyMode;
+  // Emotion detection props
+  emotionAnalysis?: EmotionAnalysis | null;
   onTryAgain: () => void;
   onContinue: () => void;
   onWordDrill?: (words: string[]) => void;
@@ -38,6 +42,7 @@ export const AIFeedback = ({
   needsWordDrill = false,
   expectedText,
   therapyMode = 'pronunciation',
+  emotionAnalysis,
   onTryAgain, 
   onContinue,
   onWordDrill,
@@ -190,6 +195,11 @@ export const AIFeedback = ({
             ))}
           </div>
         </div>
+      )}
+
+      {/* Emotion Detection Feedback */}
+      {emotionAnalysis && (
+        <EmotionFeedback analysis={emotionAnalysis} showDetails={true} />
       )}
 
       {/* Feedback */}
