@@ -31,6 +31,7 @@ import {
   getWeakPhonemePatterns,
   getUserDifficultyProgress
 } from '@/lib/adaptiveDifficulty';
+import { getWeakSoundsForExercises, SOUND_PATTERNS, SoundPattern } from '@/lib/weakSoundAnalysis';
 
 interface ProfileData {
   age_group: string | null;
@@ -50,6 +51,7 @@ const TherapySession = () => {
   const { user, loading } = useAuth();
   
   const duration = parseInt(searchParams.get('duration') || '10', 10);
+  const sessionMode = searchParams.get('mode'); // 'focused' mode for sound-focused practice
   
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -88,11 +90,12 @@ const TherapySession = () => {
           setProfile(data);
           
           // Fetch adaptive data for exercise generation
-          const [weakExercises, masteredExercises, weakPhonemes, difficultyProgress] = await Promise.all([
+          const [weakExercises, masteredExercises, weakPhonemes, difficultyProgress, weakSounds] = await Promise.all([
             getWeakExercises(user.id),
             getMasteredExercises(user.id),
             getWeakPhonemePatterns(user.id),
             getUserDifficultyProgress(user.id),
+            getWeakSoundsForExercises(user.id),
           ]);
           
           const adaptiveData: AdaptiveData = {
@@ -100,7 +103,57 @@ const TherapySession = () => {
             masteredExercises,
             weakPhonemes,
             currentDifficulty: difficultyProgress?.current_difficulty || (data.difficulty as 'beginner' | 'moderate' | 'severe') || 'beginner',
+            weakSounds, // Add weak sounds for prioritization
           };
+          
+          // Check for focused mode with stored sound data
+          if (sessionMode === 'focused') {
+            const focusedData = sessionStorage.getItem('focusedSound');
+            if (focusedData) {
+              try {
+                const { sound, practiceSet } = JSON.parse(focusedData) as { 
+                  sound: SoundPattern; 
+                  practiceSet: { words: string[]; sentences: string[] };
+                };
+                
+                // Generate focused exercises from the sound pattern
+                const focusedExercises: Exercise[] = [];
+                
+                // Add word exercises
+                practiceSet.words.forEach((word, index) => {
+                  focusedExercises.push({
+                    id: `focused-word-${index}-${Date.now()}`,
+                    type: 'word_repetition',
+                    title: `${sound.displayName} Sound Practice`,
+                    instruction: `Practice the "${sound.displayName}" sound in this word`,
+                    content: word,
+                    difficulty: 'beginner',
+                    targetGoal: 'pronunciation',
+                  });
+                });
+                
+                // Add sentence exercises
+                practiceSet.sentences.forEach((sentence, index) => {
+                  focusedExercises.push({
+                    id: `focused-sentence-${index}-${Date.now()}`,
+                    type: 'sentence_reading',
+                    title: `${sound.displayName} Sound Sentence`,
+                    instruction: `Read this sentence focusing on the "${sound.displayName}" sound`,
+                    content: sentence,
+                    difficulty: 'moderate',
+                    targetGoal: 'pronunciation',
+                  });
+                });
+                
+                setExercises(focusedExercises);
+                sessionStorage.removeItem('focusedSound');
+                setIsLoading(false);
+                return;
+              } catch (e) {
+                console.error('Error parsing focused sound data:', e);
+              }
+            }
+          }
           
           // Generate exercises with adaptive data
           const generatedExercises = generateExercises(data, duration, adaptiveData);
