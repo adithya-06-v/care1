@@ -51,22 +51,7 @@ const TherapistAdmin = () => {
     averageProgress: 0,
   });
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth?mode=therapist');
-    }
-  }, [user, authLoading, navigate]);
-
-  useEffect(() => {
-    if (!roleLoading && user && !isTherapist) {
-      toast({
-        title: 'Access Denied',
-        description: 'You do not have therapist privileges.',
-        variant: 'destructive',
-      });
-      navigate('/dashboard');
-    }
-  }, [isTherapist, roleLoading, user, navigate]);
+  // Role protection is now handled by ProtectedRoute wrapper
 
   useEffect(() => {
     const fetchPatients = async () => {

@@ -29,31 +29,35 @@ const Auth = () => {
   useEffect(() => {
     const checkUserStatusAndRedirect = async () => {
       if (!loading && user) {
-        // Check if user is a therapist
-        const { data: roleData } = await supabase
+        // Fetch all roles for the user from Supabase
+        const { data: roles, error } = await supabase
           .from('user_roles')
           .select('role')
-          .eq('user_id', user.id)
-          .eq('role', 'therapist')
-          .maybeSingle();
+          .eq('user_id', user.id);
 
-        if (roleData) {
-          // User is a therapist, redirect to admin panel
-          navigate('/therapist');
+        if (error) {
+          console.error('Error fetching roles:', error);
+        }
+
+        const hasTherapistRole = roles?.some(r => r.role === 'therapist');
+
+        if (hasTherapistRole) {
+          // Therapist always goes to therapist dashboard
+          navigate('/therapist', { replace: true });
           return;
         }
 
-        // Regular user - check onboarding
-        const { data } = await supabase
+        // Regular user - check onboarding status
+        const { data: profile } = await supabase
           .from('profiles')
           .select('onboarding_completed')
           .eq('user_id', user.id)
           .maybeSingle();
 
-        if (data?.onboarding_completed) {
-          navigate('/dashboard');
+        if (profile?.onboarding_completed) {
+          navigate('/dashboard', { replace: true });
         } else {
-          navigate('/onboarding');
+          navigate('/onboarding', { replace: true });
         }
       }
     };
