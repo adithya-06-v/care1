@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 
 export interface WordAnalysis {
   word: string;
@@ -25,7 +24,7 @@ interface UseSpeechAnalysisReturn {
   isAnalyzing: boolean;
   analyzeResult: SpeechAnalysisResult | null;
   error: string | null;
-  analyzeSpeech: (audioBlob: Blob, expectedText: string) => Promise<SpeechAnalysisResult | null>;
+  analyzeSpeech: (recognizedText: string, expectedText: string) => Promise<SpeechAnalysisResult | null>;
   resetAnalysis: () => void;
 }
 
@@ -108,65 +107,63 @@ export const useSpeechAnalysis = (): UseSpeechAnalysisReturn => {
   const [analyzeResult, setAnalyzeResult] = useState<SpeechAnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const analyzeSpeech = async (audioBlob: Blob, expectedText: string): Promise<SpeechAnalysisResult | null> => {
+  const analyzeSpeech = async (recognizedText: string, expectedText: string): Promise<SpeechAnalysisResult | null> => {
     setIsAnalyzing(true);
     setError(null);
     setAnalyzeResult(null);
 
     try {
-      // Determine if this is a sentence (more than 2 words)
       const wordCount = expectedText.split(/\s+/).filter(Boolean).length;
       const isSentence = wordCount > 2;
 
-      // Create form data with audio file and expected text
-      const formData = new FormData();
-      formData.append('audio', audioBlob, 'recording.webm');
-      formData.append('expectedText', expectedText);
-      formData.append('isSentence', String(isSentence));
+      console.log('Analyzing transcript:', recognizedText, 'expected:', expectedText, 'isSentence:', isSentence);
 
-      console.log('Sending audio for analysis, size:', audioBlob.size, 'isSentence:', isSentence);
+      const analysis = analyzeWords(expectedText, recognizedText);
+      const correctPercent = wordCount > 0
+        ? (analysis.correctCount / wordCount) * 100
+        : 0;
 
-      // Call the edge function
-      const { data, error: fnError } = await supabase.functions.invoke('analyze-speech', {
-        body: formData,
-      });
+      const pronunciationScore = Math.round(correctPercent);
 
-      if (fnError) {
-        console.error('Edge function error:', fnError);
-        throw new Error(fnError.message || 'Failed to analyze speech');
+      const mispronounced = [
+        ...analysis.incorrectWords,
+        ...analysis.skippedWords,
+      ];
+
+      let feedbackMessage: string;
+      let improvementTip: string;
+
+      if (pronunciationScore >= 90) {
+        feedbackMessage = 'Excellent! Your pronunciation is very clear.';
+        improvementTip = 'Keep up the great work! Try increasing your speed gradually.';
+      } else if (pronunciationScore >= 70) {
+        feedbackMessage = 'Good effort! A few words need some practice.';
+        improvementTip = mispronounced.length > 0
+          ? `Focus on: ${mispronounced.join(', ')}`
+          : 'Try speaking a bit more slowly and clearly.';
+      } else if (pronunciationScore >= 50) {
+        feedbackMessage = 'Keep practicing! Some words were unclear.';
+        improvementTip = mispronounced.length > 0
+          ? `Practice these words individually: ${mispronounced.join(', ')}`
+          : 'Slow down and enunciate each syllable.';
+      } else {
+        feedbackMessage = 'Let\'s try again. Speak slowly and clearly.';
+        improvementTip = 'Break the text into smaller parts and practice each one.';
       }
 
-      if (data?.error) {
-        throw new Error(data.error);
-      }
-
-      // Analyze words if it's a sentence
-      let wordAnalysis: WordAnalysis[] = [];
-      let skippedWords: string[] = [];
-      let incorrectWords: string[] = [];
-      let needsWordDrill = false;
-
-      if (isSentence && data.recognizedText) {
-        const analysis = analyzeWords(expectedText, data.recognizedText);
-        wordAnalysis = analysis.wordAnalysis;
-        skippedWords = analysis.skippedWords;
-        incorrectWords = analysis.incorrectWords;
-        
-        // Needs word drill if less than 60% correct or has 2+ incorrect/skipped words
-        const correctPercent = (analysis.correctCount / wordCount) * 100;
-        needsWordDrill = correctPercent < 60 || (skippedWords.length + incorrectWords.length) >= 2;
-      }
+      const needsWordDrill = isSentence &&
+        (correctPercent < 60 || (analysis.skippedWords.length + analysis.incorrectWords.length) >= 2);
 
       const result: SpeechAnalysisResult = {
-        recognizedText: data.recognizedText,
-        pronunciationScore: data.pronunciationScore,
-        feedbackMessage: data.feedbackMessage,
-        improvementTip: data.improvementTip || '',
-        mispronounced: data.mispronounced || [],
+        recognizedText,
+        pronunciationScore,
+        feedbackMessage,
+        improvementTip,
+        mispronounced,
         isSentence,
-        wordAnalysis,
-        skippedWords,
-        incorrectWords,
+        wordAnalysis: analysis.wordAnalysis,
+        skippedWords: analysis.skippedWords,
+        incorrectWords: analysis.incorrectWords,
         needsWordDrill,
       };
 

@@ -25,7 +25,6 @@ interface AIFeedbackProps {
   // Emotion detection props
   emotionAnalysis?: EmotionAnalysis | null;
   onTryAgain: () => void;
-  onContinue: () => void;
   onWordDrill?: (words: string[]) => void;
 }
 
@@ -44,7 +43,6 @@ export const AIFeedback = ({
   therapyMode = 'pronunciation',
   emotionAnalysis,
   onTryAgain, 
-  onContinue,
   onWordDrill,
 }: AIFeedbackProps) => {
   const getScoreColor = () => {
@@ -236,22 +234,14 @@ export const AIFeedback = ({
           </Button>
         )}
         
-        <div className="flex gap-3">
-          <Button
-            variant="outline"
-            onClick={onTryAgain}
-            className="flex-1"
-          >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Try Again
-          </Button>
-          <Button
-            onClick={onContinue}
-            className="flex-1 shadow-button"
-          >
-            Continue
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          onClick={onTryAgain}
+          className="w-full"
+        >
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Try Again
+        </Button>
       </div>
     </motion.div>
   );

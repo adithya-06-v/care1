@@ -1,77 +1,51 @@
-import { motion } from 'framer-motion';
-import { Mic, Square, Play, Pause } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useState, useRef } from 'react';
+import { motion } from "framer-motion";
+import { Mic, Square } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface RecordingButtonProps {
   isRecording: boolean;
-  hasRecording: boolean;
-  audioUrl: string | null;
-  duration: number;
-  onStartRecording: () => void;
-  onStopRecording: () => void;
-  onResetRecording: () => void;
+  transcript: string;
+  status: string;
+  audioLevel: number;
+  onToggleRecording: () => void;
 }
 
 export const RecordingButton = ({
   isRecording,
-  hasRecording,
-  audioUrl,
-  duration,
-  onStartRecording,
-  onStopRecording,
-  onResetRecording,
+  transcript,
+  status,
+  audioLevel,
+  onToggleRecording,
 }: RecordingButtonProps) => {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const handlePlayback = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        audioRef.current.play();
-        setIsPlaying(true);
-      }
-    }
-  };
+  const meterWidth = `${Math.min(100, Math.max(6, audioLevel * 1400))}%`;
 
   return (
     <div className="flex flex-col items-center gap-4">
-      {/* Main Recording Button */}
-      <motion.div
-        whileTap={{ scale: 0.95 }}
-        className="relative"
-      >
-        {isRecording && (
-          <motion.div
-            className="absolute inset-0 rounded-full bg-destructive/30"
-            animate={{ scale: [1, 1.3, 1] }}
-            transition={{ duration: 1, repeat: Infinity }}
-          />
-        )}
+      <motion.div whileTap={{ scale: 0.95 }} className="relative">
+        <motion.div
+          className={`pointer-events-none absolute inset-0 rounded-full ${isRecording ? "bg-destructive/25" : "bg-primary/20"}`}
+          animate={{ scale: [1, isRecording ? 1.12 : 1.06, 1] }}
+          transition={{ duration: 1, repeat: Infinity }}
+        />
         <Button
           size="lg"
-          onClick={isRecording ? onStopRecording : onStartRecording}
-          className={`w-20 h-20 rounded-full shadow-lg ${
-            isRecording 
-              ? 'bg-destructive hover:bg-destructive/90' 
-              : hasRecording 
-              ? 'bg-primary hover:bg-primary/90' 
-              : 'bg-primary hover:bg-primary/90'
+          onClick={onToggleRecording}
+          className={`min-w-[220px] rounded-full shadow-lg text-white ${
+            isRecording
+              ? "bg-destructive hover:bg-destructive/90"
+              : "bg-primary hover:bg-primary/90"
           }`}
         >
           {isRecording ? (
-            <Square className="w-8 h-8 text-white fill-white" />
+            <>
+              <Square className="w-5 h-5 fill-white mr-2" />
+              Stop Recording
+            </>
           ) : (
-            <Mic className="w-8 h-8 text-white" />
+            <>
+              <Mic className="w-5 h-5 mr-2" />
+              Start Recording
+            </>
           )}
         </Button>
       </motion.div>
@@ -81,58 +55,47 @@ export const RecordingButton = ({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="flex items-center gap-2 text-destructive"
+          className="flex flex-col items-center gap-2 text-destructive"
         >
-          <motion.div
-            className="w-2 h-2 rounded-full bg-destructive"
-            animate={{ opacity: [1, 0.3, 1] }}
-            transition={{ duration: 0.8, repeat: Infinity }}
-          />
-          <span className="font-mono font-medium">{formatDuration(duration)}</span>
-          <span className="text-sm">Recording...</span>
+          <div className="flex items-center gap-2">
+            <motion.div
+              className="w-2 h-2 rounded-full bg-destructive"
+              animate={{ opacity: [1, 0.3, 1] }}
+              transition={{ duration: 0.8, repeat: Infinity }}
+            />
+            <span className="text-sm">Listening...</span>
+          </div>
+          <p className="text-xs text-muted-foreground text-center">{status}</p>
+          <div className="w-full max-w-[260px] h-2 rounded-full bg-muted overflow-hidden">
+            <div
+              className="h-full rounded-full bg-primary transition-[width] duration-150"
+              style={{ width: meterWidth }}
+            />
+          </div>
         </motion.div>
       )}
 
-      {/* Playback Controls */}
-      {hasRecording && !isRecording && audioUrl && (
+      {(isRecording || transcript) && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-3"
+          className="flex flex-col items-center gap-3 w-full"
         >
-          <audio
-            ref={audioRef}
-            src={audioUrl}
-            onEnded={() => setIsPlaying(false)}
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handlePlayback}
-            className="rounded-full"
-          >
-            {isPlaying ? (
-              <Pause className="w-4 h-4 mr-1" />
-            ) : (
-              <Play className="w-4 h-4 mr-1" />
-            )}
-            {isPlaying ? 'Pause' : 'Play'}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onResetRecording}
-            className="text-muted-foreground"
-          >
-            Re-record
-          </Button>
+          <div className="w-full p-3 bg-muted/40 rounded-lg border border-border text-center min-h-[88px]">
+            <p className="text-xs text-muted-foreground mb-1">
+              {isRecording ? "Live preview" : "You said"}
+            </p>
+            <p className="text-sm font-medium text-foreground">
+              {transcript || "Start speaking and your words will appear here in real time."}
+            </p>
+          </div>
         </motion.div>
       )}
 
       {/* Instructions */}
-      {!isRecording && !hasRecording && (
+      {!isRecording && !transcript && (
         <p className="text-sm text-muted-foreground">
-          Tap to start recording your voice
+          {status}
         </p>
       )}
     </div>

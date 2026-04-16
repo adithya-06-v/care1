@@ -93,6 +93,69 @@ const getAllExercises = (): Omit<Exercise, 'id'>[] => [
   ...confidenceExercises,
 ];
 
+// Mode-first exercise banks so each therapy mode feels distinct.
+const exercisesByMode = {
+  pronunciation: [
+    ...pronunciationExercises,
+    ...vocabularyExercises.filter((exercise) => exercise.type !== 'sentence_reading'),
+    {
+      type: 'sentence_reading',
+      title: 'Presentation Phrase',
+      instruction: 'Read with crisp consonants and clear vowels',
+      content: 'Please pronounce each word carefully so every sound is easy to hear and understand.',
+      difficulty: 'severe',
+      targetGoal: 'pronunciation',
+    },
+  ],
+  fluency: [
+    ...fluencyExercises,
+    ...confidenceExercises.filter((exercise) => exercise.type === 'sentence_reading'),
+    {
+      type: 'sentence_reading',
+      title: 'Smooth Story Phrase',
+      instruction: 'Use gentle starts and steady breathing through the full phrase',
+      content: 'When I slow down, breathe deeply, and keep a relaxed rhythm, my speech feels smoother and more comfortable.',
+      difficulty: 'severe',
+      targetGoal: 'fluency',
+    },
+  ],
+  child_development: [
+    ...childExercises,
+    {
+      type: 'word_repetition',
+      title: 'Playground Words',
+      instruction: 'Say each fun word clearly with a smile',
+      content: 'Rocket, Rainbow, Puppy, Bubble, Cookie',
+      difficulty: 'beginner',
+      targetGoal: 'child_development',
+      ageGroup: 'child',
+    },
+    {
+      type: 'sentence_reading',
+      title: 'Story Time',
+      instruction: 'Read the whole phrase like you are telling a fun story',
+      content: 'The little rabbit hopped through the sunny garden and found a bright red balloon.',
+      difficulty: 'moderate',
+      targetGoal: 'child_development',
+      ageGroup: 'child',
+    },
+  ],
+  accent: [
+    ...accentExercises,
+    ...pronunciationExercises.filter((exercise) => exercise.type === 'minimal_pairs' || exercise.type === 'sentence_reading'),
+    {
+      type: 'sentence_reading',
+      title: 'Natural Speech Pattern',
+      instruction: 'Practice stress, linking, and natural melody across the full phrase',
+      content: 'I would really like to improve the rhythm, stress, and natural flow of my everyday English speech.',
+      difficulty: 'severe',
+      targetGoal: 'accent',
+    },
+  ],
+} as const;
+
+type ModeExerciseBank = keyof typeof exercisesByMode;
+
 // Profile interface for exercise generation
 interface UserProfile {
   age_group: string | null;
@@ -119,6 +182,30 @@ const goalMapping: Record<string, string> = {
   accent: 'accent',
   confidence: 'confidence',
   child_development: 'child_development',
+};
+
+const getExerciseVarietyBucket = (
+  exercise: Omit<Exercise, 'id'>
+): 'word' | 'sentence' | 'long_phrase' => {
+  if (
+    exercise.type === 'word_repetition' ||
+    exercise.type === 'pronunciation' ||
+    exercise.type === 'minimal_pairs' ||
+    exercise.type === 'syllable_drill'
+  ) {
+    return 'word';
+  }
+
+  const cleanedContent = exercise.content
+    .replace(/[^\w\s]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (cleanedContent.length >= 10) {
+    return 'long_phrase';
+  }
+
+  return 'sentence';
 };
 
 // Check if exercise matches weak phoneme patterns
@@ -203,47 +290,37 @@ export const generateExercises = (
     ? ['beginner', 'moderate']
     : ['beginner'];
 
-  // Determine target goals based on therapy mode
-  const therapyMode = profile.therapy_mode || 'pronunciation';
-  const modeGoalMapping: Record<string, string[]> = {
-    pronunciation: ['pronunciation', 'vocabulary'],
-    fluency: ['fluency', 'confidence'],
-    child_development: ['child_development', 'pronunciation', 'vocabulary'],
-    accent: ['accent', 'pronunciation', 'confidence'],
-  };
-  
-  // Start with mode-specific goals
-  let targetGoals = modeGoalMapping[therapyMode] || ['pronunciation'];
-  
-  // Also include user's selected goals for more variety
-  const userGoals = profile.goals || [];
-  userGoals.forEach(g => {
-    const mapped = goalMapping[g] || g;
-    if (!targetGoals.includes(mapped)) {
-      targetGoals.push(mapped);
-    }
-  });
+  const selectedMode: ModeExerciseBank =
+    profile.therapy_mode && profile.therapy_mode in exercisesByMode
+      ? (profile.therapy_mode as ModeExerciseBank)
+      : 'pronunciation';
+  const currentExercises = exercisesByMode[selectedMode] || exercisesByMode.pronunciation;
 
-  // Add child exercises if age group is child or mode is child_development
-  if (profile.age_group === 'child' || therapyMode === 'child_development') {
-    if (!targetGoals.includes('child_development')) {
-      targetGoals.push('child_development');
-    }
-  }
-
-  // Filter exercises based on profile
-  let filteredExercises = allExercises.filter(ex => {
+  // Filter exercises based on the selected mode first.
+  let filteredExercises = currentExercises.filter(ex => {
     // Check difficulty
     if (!validDifficulties.includes(ex.difficulty)) return false;
-    
-    // Check if it matches any user goal
-    if (!targetGoals.includes(ex.targetGoal)) return false;
-    
+
     // Check age group for child-specific exercises
     if (ex.ageGroup === 'child' && profile.age_group !== 'child') return false;
-    
+
     return true;
   });
+
+  // Add a small amount of supporting material from user goals without losing the mode identity.
+  const userGoals = (profile.goals || [])
+    .map((goal) => goalMapping[goal] || goal)
+    .filter((goal) => goal !== selectedMode);
+
+  if (userGoals.length > 0) {
+    const supportingExercises = allExercises.filter((exercise) => {
+      if (!validDifficulties.includes(exercise.difficulty)) return false;
+      if (exercise.ageGroup === 'child' && profile.age_group !== 'child') return false;
+      return userGoals.includes(exercise.targetGoal);
+    });
+
+    filteredExercises = [...filteredExercises, ...supportingExercises.slice(0, 2)];
+  }
 
   // If no matching exercises, fall back to all beginner pronunciation
   if (filteredExercises.length === 0) {
@@ -303,11 +380,35 @@ export const generateExercises = (
     // No adaptive data, just shuffle
     filteredExercises = [...filteredExercises].sort(() => Math.random() - 0.5);
   }
+
+  // Guarantee a more varied session: try to include words, sentences, and longer phrases.
+  const varietyOrder: Array<'word' | 'sentence' | 'long_phrase'> = ['word', 'sentence', 'long_phrase'];
+  const selectedVarietyExercises: Omit<Exercise, 'id'>[] = [];
+  const usedContents = new Set<string>();
+
+  varietyOrder.forEach((bucket) => {
+    const match = filteredExercises.find((exercise) => {
+      if (usedContents.has(exercise.content)) return false;
+      return getExerciseVarietyBucket(exercise) === bucket;
+    });
+
+    if (match) {
+      selectedVarietyExercises.push(match);
+      usedContents.add(match.content);
+    }
+  });
+
+  const remainingExercises = filteredExercises.filter(
+    (exercise) => !usedContents.has(exercise.content)
+  );
+
+  filteredExercises = [...selectedVarietyExercises, ...remainingExercises];
   
   // If we need more exercises than available, repeat some
   while (filteredExercises.length < exerciseCount) {
     const originalFiltered = allExercises.filter(ex => 
-      validDifficulties.includes(ex.difficulty) && targetGoals.includes(ex.targetGoal)
+      validDifficulties.includes(ex.difficulty) &&
+      (ex.targetGoal === selectedMode || userGoals.includes(ex.targetGoal))
     );
     filteredExercises.push(...originalFiltered.sort(() => Math.random() - 0.5));
   }
@@ -320,8 +421,8 @@ export const generateExercises = (
     });
   }
 
-  // Always start with a breathing exercise if fluency is a goal
-  if (targetGoals.includes('fluency') && exercises.length > 0) {
+  // Always start with a breathing exercise in fluency mode
+  if (selectedMode === 'fluency' && exercises.length > 0) {
     const breathingExercise = allExercises.find(
       ex => ex.type === 'breathing' && validDifficulties.includes(ex.difficulty)
     );
