@@ -1,0 +1,12 @@
+[
+  { "id": 1, "text": "Appreciate", "type": "word", "difficulty": "medium" },
+  { "id": 2, "text": "Delicious", "type": "word", "difficulty": "medium" },
+  { "id": 3, "text": "Excellent", "type": "word", "difficulty": "medium" },
+  { "id": 4, "text": "Particular", "type": "word", "difficulty": "medium" },
+  { "id": 5, "text": "Vocabulary", "type": "word", "difficulty": "medium" },
+  { "id": 6, "text": "Would you like to come with me to the store", "type": "sentence", "difficulty": "medium" },
+  { "id": 7, "text": "She quickly ran to catch the bus before it left", "type": "sentence", "difficulty": "medium" },
+  { "id": 8, "text": "Today is a beautiful day and the sun is shining brightly", "type": "sentence", "difficulty": "hard" },
+  { "id": 9, "text": "We are pleased to announce the successful completion of our project", "type": "sentence", "difficulty": "hard" },
+  { "id": 10, "text": "Serendipity", "type": "word", "difficulty": "hard" }
+]

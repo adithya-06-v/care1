@@ -19,7 +19,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { AssignExerciseDialog } from './AssignExerciseDialog';
-import { PatientProgressChart } from './PatientProgressChart';
+import { ProgressChart } from './ProgressChart';
 
 interface PatientDetailProps {
   patientId: string;
@@ -263,7 +263,7 @@ export const PatientDetail = ({ patientId, therapistId }: PatientDetailProps) =>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <PatientProgressChart sessions={sessions} />
+              <ProgressChart patientId={patientId} />
             </CardContent>
           </Card>
         </TabsContent>

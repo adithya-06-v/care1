@@ -44,6 +44,42 @@ export type Database = {
         }
         Relationships: []
       }
+      appointments: {
+        Row: {
+          created_at: string
+          duration: number | null
+          id: string
+          notes: string | null
+          room_id: string | null
+          score: number | null
+          status: string
+          therapist_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration?: number | null
+          id?: string
+          notes?: string | null
+          room_id?: string | null
+          score?: number | null
+          status?: string
+          therapist_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration?: number | null
+          id?: string
+          notes?: string | null
+          room_id?: string | null
+          score?: number | null
+          status?: string
+          therapist_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       custom_exercises: {
         Row: {
           completed_at: string | null
@@ -139,6 +175,115 @@ export type Database = {
           },
         ]
       }
+      exercises: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          difficulty: string
+          id: string
+          image_url: string | null
+          tags: string[]
+          title: string
+          video_url: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          difficulty?: string
+          id?: string
+          image_url?: string | null
+          tags?: string[]
+          title: string
+          video_url?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          difficulty?: string
+          id?: string
+          image_url?: string | null
+          tags?: string[]
+          title?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
+      exercises_progress: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          exercise_id: string
+          id: string
+          score: number
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          exercise_id: string
+          id?: string
+          score?: number
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          exercise_id?: string
+          id?: string
+          score?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercises_progress_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_exercises: {
+        Row: {
+          completed: boolean
+          created_at: string
+          date_completed: string | null
+          exercise_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          date_completed?: string | null
+          exercise_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          date_completed?: string | null
+          exercise_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_exercises_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           age_group: string | null
@@ -146,6 +291,7 @@ export type Database = {
           created_at: string
           current_streak: number | null
           difficulty: string | null
+          email: string | null
           full_name: string | null
           goals: string[] | null
           id: string
@@ -159,6 +305,7 @@ export type Database = {
           total_practice_minutes: number | null
           updated_at: string
           user_id: string
+          weakness: string | null
         }
         Insert: {
           age_group?: string | null
@@ -166,6 +313,7 @@ export type Database = {
           created_at?: string
           current_streak?: number | null
           difficulty?: string | null
+          email?: string | null
           full_name?: string | null
           goals?: string[] | null
           id?: string
@@ -179,6 +327,7 @@ export type Database = {
           total_practice_minutes?: number | null
           updated_at?: string
           user_id: string
+          weakness?: string | null
         }
         Update: {
           age_group?: string | null
@@ -186,6 +335,7 @@ export type Database = {
           created_at?: string
           current_streak?: number | null
           difficulty?: string | null
+          email?: string | null
           full_name?: string | null
           goals?: string[] | null
           id?: string
@@ -199,6 +349,7 @@ export type Database = {
           total_practice_minutes?: number | null
           updated_at?: string
           user_id?: string
+          weakness?: string | null
         }
         Relationships: []
       }
@@ -447,6 +598,30 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_weakness: {
+        Row: {
+          id: string
+          user_id: string
+          weakness: string | null
+          confidence: number | null
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          weakness?: string | null
+          confidence?: number | null
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          weakness?: string | null
+          confidence?: number | null
+          updated_at?: string
         }
         Relationships: []
       }

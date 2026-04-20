@@ -1,0 +1,16 @@
+[
+    { "id": 1, "text": "పుస్తకం", "type": "word", "difficulty": "medium" },
+    { "id": 2, "text": "నాకు నీరు కావాలి", "type": "sentence", "difficulty": "medium" }
+    ,
+{ "id": 3, "text": "పాఠశాల", "type": "word", "difficulty": "medium" },
+{ "id": 4, "text": "ఆరోగ్యం", "type": "word", "difficulty": "medium" },
+{ "id": 5, "text": "ప్రశిక్షణ", "type": "word", "difficulty": "medium" },
+{ "id": 6, "text": "సమాచారం", "type": "word", "difficulty": "medium" },
+
+{ "id": 7, "text": "నాకు ఈ రోజు మార్కెట్ కి వెళ్లాలి", "type": "sentence", "difficulty": "medium" },
+{ "id": 8, "text": "అతను ప్రతి రోజు అభ్యాసం చేస్తాడు", "type": "sentence", "difficulty": "medium" },
+{ "id": 9, "text": "నేను నెమ్మదిగా మరియు స్పష్టంగా మాట్లాడేందుకు ప్రయత్నిస్తున్నాను", "type": "sentence", "difficulty": "medium" },
+{ "id": 10, "text": "మనము కలిసి ఈ సమస్యను పరిష్కరిస్తాము", "type": "sentence", "difficulty": "medium" },
+{ "id": 11, "text": "మంచి అలవాట్లు జీవితం మెరుగుపరుస్తాయి", "type": "sentence", "difficulty": "medium" },
+{ "id": 12, "text": "మనము జాగ్రత్తగా వింటే బాగా అర్థం చేసుకోగలము", "type": "sentence", "difficulty": "medium" }
+  ]

@@ -10,6 +10,7 @@ interface Patient {
   notes: string | null;
   profile?: {
     full_name: string | null;
+    email?: string | null;
     therapy_sessions_completed: number | null;
     current_streak: number | null;
     therapy_mode: string | null;
@@ -18,12 +19,23 @@ interface Patient {
 
 interface PatientListProps {
   patients: Patient[];
+  /** Total patients in roster (before search filter); used for empty-search UX */
+  rosterTotal?: number;
   selectedPatientId: string | null;
   onSelectPatient: (patientId: string) => void;
   isLoading: boolean;
 }
 
-export const PatientList = ({ patients, selectedPatientId, onSelectPatient, isLoading }: PatientListProps) => {
+export const PatientList = ({
+  patients,
+  rosterTotal,
+  selectedPatientId,
+  onSelectPatient,
+  isLoading,
+}: PatientListProps) => {
+  const total = rosterTotal ?? patients.length;
+  const searchNoMatch = total > 0 && patients.length === 0;
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -32,12 +44,21 @@ export const PatientList = ({ patients, selectedPatientId, onSelectPatient, isLo
     );
   }
 
+  if (searchNoMatch) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        <p className="text-sm">No patients found</p>
+        <p className="text-xs mt-1">Try a different search</p>
+      </div>
+    );
+  }
+
   if (patients.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
         <User className="w-8 h-8 mx-auto mb-2 opacity-50" />
-        <p className="text-sm">No patients assigned yet</p>
-        <p className="text-xs mt-1">Patients will appear here once assigned</p>
+        <p className="text-sm">No patients yet</p>
+        <p className="text-xs mt-1">Patients appear after you accept a booking</p>
       </div>
     );
   }
@@ -76,6 +97,17 @@ export const PatientList = ({ patients, selectedPatientId, onSelectPatient, isLo
                 }`}>
                   {patient.profile?.full_name || 'Unknown'}
                 </p>
+                {patient.profile?.email ? (
+                  <p
+                    className={`text-xs truncate ${
+                      selectedPatientId === patient.patient_id
+                        ? 'text-primary-foreground/80'
+                        : 'text-muted-foreground'
+                    }`}
+                  >
+                    {patient.profile.email}
+                  </p>
+                ) : null}
                 <div className="flex items-center gap-2 mt-0.5">
                   {patient.profile?.current_streak && patient.profile.current_streak > 0 && (
                     <span className={`flex items-center gap-1 text-xs ${

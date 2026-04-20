@@ -272,11 +272,12 @@ const containsWeakSound = (content: string, weakSounds: string[]): boolean => {
   });
 };
 
-// Generate personalized exercises based on user profile and adaptive data
+// Generate personalized exercises based on user profile, adaptive data, and optional loaded dataset
 export const generateExercises = (
   profile: UserProfile,
   sessionDurationMinutes: number,
-  adaptiveData?: AdaptiveData
+  adaptiveData?: AdaptiveData,
+  datasetExercises?: Omit<Exercise, 'id'>[],
 ): Exercise[] => {
   const exercises: Exercise[] = [];
   const allExercises = getAllExercises();
@@ -294,20 +295,26 @@ export const generateExercises = (
     profile.therapy_mode && profile.therapy_mode in exercisesByMode
       ? (profile.therapy_mode as ModeExerciseBank)
       : 'pronunciation';
-  const currentExercises = exercisesByMode[selectedMode] || exercisesByMode.pronunciation;
 
-  // Filter exercises based on the selected mode first.
-  let filteredExercises = currentExercises.filter(ex => {
-    // Check difficulty
+  // Use loaded dataset exercises if available, otherwise fall back to hardcoded mode banks
+  const primaryExercises: Omit<Exercise, 'id'>[] =
+    datasetExercises && datasetExercises.length > 0
+      ? datasetExercises
+      : [...(exercisesByMode[selectedMode] || exercisesByMode.pronunciation)];
+
+  if (datasetExercises && datasetExercises.length > 0) {
+    console.log(`Using ${datasetExercises.length} exercises from loaded dataset`);
+  } else {
+    console.log(`Using hardcoded exercise bank for mode: ${selectedMode}`);
+  }
+
+  let filteredExercises = primaryExercises.filter(ex => {
     if (!validDifficulties.includes(ex.difficulty)) return false;
-
-    // Check age group for child-specific exercises
     if (ex.ageGroup === 'child' && profile.age_group !== 'child') return false;
-
     return true;
   });
 
-  // Add a small amount of supporting material from user goals without losing the mode identity.
+  // Add supporting material from user goals
   const userGoals = (profile.goals || [])
     .map((goal) => goalMapping[goal] || goal)
     .filter((goal) => goal !== selectedMode);
@@ -318,7 +325,6 @@ export const generateExercises = (
       if (exercise.ageGroup === 'child' && profile.age_group !== 'child') return false;
       return userGoals.includes(exercise.targetGoal);
     });
-
     filteredExercises = [...filteredExercises, ...supportingExercises.slice(0, 2)];
   }
 

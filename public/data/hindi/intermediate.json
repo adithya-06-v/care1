@@ -1,0 +1,15 @@
+[
+    { "id": 1, "text": "किताब", "type": "word", "difficulty": "medium" },
+    { "id": 2, "text": "मुझे पानी चाहिए", "type": "sentence", "difficulty": "medium" },
+{ "id": 3, "text": "विद्यालय", "type": "word", "difficulty": "medium" },
+{ "id": 4, "text": "समाचार", "type": "word", "difficulty": "medium" },
+{ "id": 5, "text": "प्रशिक्षण", "type": "word", "difficulty": "medium" },
+{ "id": 6, "text": "स्वास्थ्य", "type": "word", "difficulty": "medium" },
+
+{ "id": 7, "text": "मुझे आज बाजार जाना है", "type": "sentence", "difficulty": "medium" },
+{ "id": 8, "text": "वह हर दिन अभ्यास करता है", "type": "sentence", "difficulty": "medium" },
+{ "id": 9, "text": "मैं धीरे और स्पष्ट बोलने की कोशिश करता हूँ", "type": "sentence", "difficulty": "medium" },
+{ "id": 10, "text": "हम मिलकर इस समस्या का समाधान करेंगे", "type": "sentence", "difficulty": "medium" },
+{ "id": 11, "text": "अच्छी आदतें जीवन को बेहतर बनाती हैं", "type": "sentence", "difficulty": "medium" },
+{ "id": 12, "text": "जब हम ध्यान से सुनते हैं तो बेहतर समझ पाते हैं", "type": "sentence", "difficulty": "medium" }
+  ]

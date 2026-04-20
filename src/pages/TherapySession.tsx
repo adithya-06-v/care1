@@ -19,6 +19,8 @@ import {
   Loader2,
   Send,
   RotateCcw,
+  Globe,
+  BookOpen,
 } from "lucide-react";
 import {
   generateExercises,
@@ -27,6 +29,8 @@ import {
   Exercise,
   AdaptiveData,
 } from "@/lib/exerciseGenerator";
+import { loadDataset } from "@/lib/loadDataset";
+import { playAudio } from "@/services/tts.js";
 import {
   useSpeechAnalysis,
   SpeechAnalysisResult,
@@ -114,6 +118,12 @@ const TherapySession = () => {
     useState<EmotionAnalysis | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [interimText, setInterimText] = useState("");
+  const [selectedLanguage, setSelectedLanguage] = useState("english");
+  const [selectedMode, setSelectedMode] = useState("beginner");
+  const [usingFallback, setUsingFallback] = useState(false);
+  const [datasetSource, setDatasetSource] = useState("");
+  const [isDatasetLoading, setIsDatasetLoading] = useState(false);
+  const adaptiveDataRef = useRef<AdaptiveData | null>(null);
 
   const speechRecognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
@@ -373,13 +383,15 @@ const TherapySession = () => {
             }
           }
 
-          // Generate exercises with adaptive data
-          const generatedExercises = generateExercises(
-            data,
-            duration,
-            adaptiveData,
-          );
-          setExercises(generatedExercises);
+          // Store adaptive data and seed initial language/mode from profile
+          adaptiveDataRef.current = adaptiveData;
+          const difficultyToMode: Record<string, string> = {
+            beginner: "beginner",
+            moderate: "intermediate",
+            severe: "advanced",
+          };
+          setSelectedLanguage(data.preferred_language || "english");
+          setSelectedMode(difficultyToMode[adaptiveData.currentDifficulty] || "beginner");
         }
         setIsLoading(false);
       }
@@ -389,6 +401,47 @@ const TherapySession = () => {
       fetchProfileAndGenerateExercises();
     }
   }, [user, duration]);
+
+  // Reactive dataset loading: runs on mount and whenever language or mode changes
+  useEffect(() => {
+    if (!profile) return;
+
+    let cancelled = false;
+    const loadAndGenerate = async () => {
+      setIsDatasetLoading(true);
+      setUsingFallback(false);
+      setDatasetSource("");
+
+      console.log(`Loading dataset: ${selectedLanguage}/${selectedMode}`);
+      const result = await loadDataset(selectedLanguage, selectedMode);
+
+      if (cancelled) return;
+
+      setDatasetSource(result.source);
+      setUsingFallback(result.isFallback);
+
+      const generatedExercises = generateExercises(
+        profile,
+        duration,
+        adaptiveDataRef.current ?? undefined,
+        result.data,
+      );
+
+      if (cancelled) return;
+
+      setExercises(generatedExercises);
+      setCurrentExerciseIndex(0);
+      setShowFeedback(false);
+      setCurrentFeedback(null);
+      resetRecording();
+      setIsDatasetLoading(false);
+      setIsLoading(false);
+      console.log(`Session ready: ${generatedExercises.length} exercises from ${result.source} (fallback: ${result.isFallback})`);
+    };
+
+    loadAndGenerate();
+    return () => { cancelled = true; };
+  }, [selectedLanguage, selectedMode, profile, duration, resetRecording]);
 
   useEffect(() => {
     if (isComplete || isPaused || timeRemaining <= 0 || showFeedback) return;
@@ -731,6 +784,15 @@ const TherapySession = () => {
       setCurrentFeedback(result);
       setShowFeedback(true);
       await saveExerciseResult(result, expectedText, emotionResult.tag);
+
+      // Audio feedback (ElevenLabs)
+      const feedbackLine =
+        result.pronunciationScore >= 80 ? "Good job" : "Try again";
+      await playAudio(feedbackLine, { waitUntilEnd: true });
+      if (result.pronunciationScore < 80 && expectedText.trim()) {
+        await new Promise((r) => setTimeout(r, 600));
+        await playAudio(expectedText, { waitUntilEnd: true });
+      }
     } else {
       toast({
         title: "Analysis failed",
@@ -802,14 +864,6 @@ const TherapySession = () => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  const speakText = (text: string) => {
-    const speech = new SpeechSynthesisUtterance(text);
-    speech.lang = "en-US";
-    speech.rate = 0.9;
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(speech);
   };
 
   if (loading || isLoading || subscriptionLoading) {
@@ -929,13 +983,54 @@ const TherapySession = () => {
       </header>
 
       <main className="container mx-auto px-4 py-6 max-w-2xl">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <p className="text-sm text-muted-foreground">
             Exercise {currentExerciseIndex + 1} of {exercises.length}
           </p>
           <p className="text-sm text-muted-foreground">
             {exercisesCompleted} completed
           </p>
+        </div>
+
+        <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-1.5">
+            <Globe className="w-4 h-4 text-muted-foreground" />
+            <select
+              value={selectedLanguage}
+              onChange={(e) => setSelectedLanguage(e.target.value)}
+              disabled={isDatasetLoading}
+              className="text-sm bg-muted/50 border border-border rounded-lg px-2 py-1.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+            >
+              <option value="english">English</option>
+              <option value="hindi">Hindi</option>
+              <option value="telugu">Telugu</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <BookOpen className="w-4 h-4 text-muted-foreground" />
+            <select
+              value={selectedMode}
+              onChange={(e) => setSelectedMode(e.target.value)}
+              disabled={isDatasetLoading}
+              className="text-sm bg-muted/50 border border-border rounded-lg px-2 py-1.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+            >
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+              <option value="therapy">Therapy</option>
+            </select>
+          </div>
+
+          {isDatasetLoading && (
+            <Loader2 className="w-4 h-4 text-primary animate-spin" />
+          )}
+
+          {usingFallback && !isDatasetLoading && datasetSource && (
+            <span className="text-xs text-amber-500">
+              Using {datasetSource.replace("/", " ")} dataset (fallback)
+            </span>
+          )}
         </div>
 
         <AnimatePresence mode="wait">
@@ -963,11 +1058,48 @@ const TherapySession = () => {
                 onTryAgain={handleTryAgain}
                 onWordDrill={handleWordDrill}
               />
-              <div className="mt-4">
-                <Button onClick={goToNextExercise} className="w-full shadow-button">
-                  Next
-                </Button>
-              </div>
+              {currentFeedback && (
+                <div className="mt-4 space-y-3">
+                  <div className="flex items-center justify-between px-1">
+                    <span className="text-sm font-medium text-muted-foreground">
+                      Accuracy: <span className="font-bold text-foreground">{currentFeedback.pronunciationScore}%</span>
+                      {currentFeedback.charAccuracy !== currentFeedback.pronunciationScore && (
+                        <span className="ml-2 text-xs text-muted-foreground">(char: {currentFeedback.charAccuracy}%)</span>
+                      )}
+                    </span>
+                    <span className={`text-sm font-bold ${currentFeedback.pronunciationScore >= 80 ? "text-green-500" : "text-red-500"}`}>
+                      {currentFeedback.pronunciationScore >= 80 ? "Correct" : "Try Again"}
+                    </span>
+                  </div>
+
+                  {currentFeedback.mismatchHint && currentFeedback.pronunciationScore < 80 && (
+                    <p className="text-xs text-amber-500 text-center">{currentFeedback.mismatchHint}</p>
+                  )}
+
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={handleTryAgain}
+                      className="flex-1"
+                    >
+                      Try Again
+                    </Button>
+                    <Button
+                      onClick={goToNextExercise}
+                      disabled={currentFeedback.pronunciationScore < 80}
+                      className="flex-1 shadow-button"
+                    >
+                      Next
+                    </Button>
+                  </div>
+
+                  {currentFeedback.pronunciationScore < 80 && (
+                    <p className="text-xs text-center text-muted-foreground">
+                      Score 80% or higher to unlock the next exercise
+                    </p>
+                  )}
+                </div>
+              )}
             </motion.div>
           ) : (
             <motion.div
@@ -1016,7 +1148,7 @@ const TherapySession = () => {
                     <div className="flex justify-center">
                       <Button
                         variant="outline"
-                        onClick={() => speakText(currentExercise.content)}
+                        onClick={() => void playAudio(currentExercise.content)}
                       >
                         🔊 Listen
                       </Button>

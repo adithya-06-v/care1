@@ -18,7 +18,8 @@ import {
   User,
   Flame,
   Plus,
-  Sparkles
+  Sparkles,
+  History,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { RecommendedSession } from '@/components/dashboard/RecommendedSession';
@@ -29,6 +30,11 @@ import { PerformanceBadge } from '@/components/dashboard/PerformanceBadge';
 import { TodaysFocus } from '@/components/dashboard/TodaysFocus';
 import { TherapyModeSelector } from '@/components/dashboard/TherapyModeSelector';
 import { UpgradeBanner } from '@/components/subscription/UpgradeBanner';
+import { BookTherapySessionSection } from '@/components/dashboard/BookTherapySessionSection';
+import { ExercisesDuolingo } from '@/components/dashboard/ExercisesDuolingo';
+import { PersonalizedExercises } from '@/components/dashboard/PersonalizedExercises';
+import { SessionHistory } from '@/components/dashboard/SessionHistory';
+import type { SessionHistoryRow } from '@/components/dashboard/SessionCard';
 import { TherapyMode } from '@/lib/therapyModes';
 import {
   Dialog,
@@ -38,6 +44,9 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { ProBadge } from '@/components/ui/pro-badge';
+import type { Database } from '@/integrations/supabase/types';
+
+type AppointmentRow = Database['public']['Tables']['appointments']['Row'];
 
 interface Profile {
   full_name: string | null;
@@ -74,6 +83,8 @@ const Dashboard = () => {
     totalMinutes: 0,
     averageAccuracy: 0,
   });
+  const [activeSession, setActiveSession] = useState<AppointmentRow | null>(null);
+  const [sessionHistory, setSessionHistory] = useState<SessionHistoryRow[]>([]);
 
   // Handle Stripe redirect success
   useEffect(() => {
@@ -166,6 +177,79 @@ const Dashboard = () => {
     }
   }, [user]);
 
+  useEffect(() => {
+    const fetchActiveSession = async () => {
+      if (!user?.id) return;
+
+      const { data, error } = await supabase
+        .from('appointments')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'accepted')
+        .not('room_id', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) {
+        console.error('fetchActiveSession:', error);
+        return;
+      }
+
+      if (data && data.room_id) {
+        setActiveSession(data);
+      } else {
+        setActiveSession(null);
+      }
+    };
+
+    fetchActiveSession();
+  }, [user?.id]);
+
+  useEffect(() => {
+    const fetchSessionHistory = async () => {
+      if (!user?.id) return;
+
+      const { data, error } = await supabase
+        .from('appointments')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'completed')
+        .order('created_at', { ascending: false })
+        .limit(30);
+
+      if (error) {
+        console.error('fetchSessionHistory:', error);
+        return;
+      }
+
+      const rows = data ?? [];
+      const therapistIds = [...new Set(rows.map((r) => r.therapist_id))];
+      if (therapistIds.length === 0) {
+        setSessionHistory([]);
+        return;
+      }
+
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, full_name')
+        .in('user_id', therapistIds);
+
+      const nameById = new Map(
+        (profiles ?? []).map((p) => [p.user_id, p.full_name] as const),
+      );
+
+      setSessionHistory(
+        rows.map((r) => ({
+          ...r,
+          therapistName: nameById.get(r.therapist_id) ?? null,
+        })),
+      );
+    };
+
+    void fetchSessionHistory();
+  }, [user?.id]);
+
   // Pro welcome popup logic - check after subscription and profile load
   useEffect(() => {
     const checkAndShowProPopup = async () => {
@@ -245,7 +329,7 @@ const Dashboard = () => {
             <span className="text-xl font-bold text-foreground">CareVoice</span>
           </div>
           <div className="flex items-center gap-3">
-+             <ProBadge size="md" />
+            <ProBadge size="md" />
             <Button 
               variant="ghost" 
               onClick={() => navigate('/profile')}
@@ -263,7 +347,7 @@ const Dashboard = () => {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 pb-16">
         {/* Upgrade Banner for Free Users */}
         {!isPro && <UpgradeBanner />}
         
@@ -338,6 +422,34 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {activeSession && activeSession.room_id && (
+          <Card className="mb-6 border-2 border-primary shadow-card">
+            <CardContent className="p-5 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
+              <div>
+                <h3 className="font-semibold text-primary">Live Therapy Session</h3>
+                <p className="text-sm text-muted-foreground">Your therapist is ready</p>
+              </div>
+              <Button
+                type="button"
+                size="lg"
+                className="rounded-pill shrink-0"
+                onClick={() => navigate(`/video-call/${activeSession.room_id}`)}
+              >
+                Join Call
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Completed therapy video sessions */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+            <History className="w-5 h-5 text-primary" />
+            Session History
+          </h2>
+          <SessionHistory sessions={sessionHistory} />
         </div>
 
         {/* Today's Focus - Sound Reinforcement */}
@@ -504,6 +616,18 @@ const Dashboard = () => {
             </Card>
           </div>
         </div>
+
+        <div className="mt-8 space-y-12 sm:mt-10 sm:space-y-14">
+          <ExercisesDuolingo userId={user.id} />
+
+          <PersonalizedExercises
+            userId={user.id}
+            averageAccuracy={profile ? sessionStats.averageAccuracy : undefined}
+            therapyMode={profile ? (profile.therapy_mode as TherapyMode) : undefined}
+          />
+        </div>
+
+        <BookTherapySessionSection />
       </main>
 
       {/* Language Dialog */}

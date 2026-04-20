@@ -1,5 +1,17 @@
 /// <reference types="vite/client" />
 
+interface ImportMetaEnv {
+  /** ElevenLabs TTS for exercise “Listen Clearly” (dashboard exercise cards / modal) */
+  readonly VITE_ELEVENLABS_API_KEY?: string;
+  readonly VITE_AGORA_APP_ID?: string;
+  /** Supabase auth `user.id` for each therapist card (set in `.env`) */
+  readonly VITE_BOOKING_THERAPIST_PRIYA?: string;
+  readonly VITE_BOOKING_THERAPIST_RAHUL?: string;
+  readonly VITE_BOOKING_THERAPIST_ANJALI?: string;
+  readonly VITE_BOOKING_THERAPIST_ARJUN?: string;
+  readonly VITE_BOOKING_THERAPIST_KAVITA?: string;
+}
+
 declare global {
   interface SpeechRecognitionEvent extends Event {
     readonly resultIndex: number;

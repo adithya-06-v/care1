@@ -1,0 +1,62 @@
+[
+    {
+      "id": 1,
+      "text": "పా టా కా",
+      "type": "exercise",
+      "difficulty": "medium"
+    },
+    {
+      "id": 2,
+      "text": "లా లా లా",
+      "type": "exercise",
+      "difficulty": "easy"
+    },
+    {
+      "id": 3,
+      "text": "క ఖ గ ఘ",
+      "type": "exercise",
+      "difficulty": "medium"
+    },
+    {
+      "id": 4,
+      "text": "అ ఆ ఇ ఈ ఉ ఊ",
+      "type": "exercise",
+      "difficulty": "easy"
+    },
+    {
+      "id": 5,
+      "text": "నేను స్పష్టంగా మరియు నెమ్మదిగా మాట్లాడుతాను",
+      "type": "sentence",
+      "difficulty": "easy"
+    },
+    {
+      "id": 6,
+      "text": "నెమ్మదిగా మాట్లాడితే నా మాటలు మరింత స్పష్టంగా ఉంటాయి",
+      "type": "sentence",
+      "difficulty": "medium"
+    },
+    {
+      "id": 7,
+      "text": "కచ్చా పప్పు పక్కా పప్పు",
+      "type": "tongue_twister",
+      "difficulty": "hard"
+    },
+    {
+      "id": 8,
+      "text": "చందు చెల్లెలు చందమామ చూసి చప్పట్లు కొట్టింది",
+      "type": "tongue_twister",
+      "difficulty": "hard"
+    },
+    {
+      "id": 9,
+      "text": "నెమ్మదిగా లోపలికి శ్వాస తీసుకుని బయటికి వదలండి",
+      "type": "exercise",
+      "difficulty": "easy"
+    },
+    {
+      "id": 10,
+      "text": "ఓ మరియు ఏ శబ్దాలను ప్రాక్టీస్ చేయండి",
+      "type": "exercise",
+      "difficulty": "medium"
+    }
+  ]

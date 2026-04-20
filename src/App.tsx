@@ -16,6 +16,8 @@ import TherapySession from "./pages/TherapySession";
 import Progress from "./pages/Progress";
 import Achievements from "./pages/Achievements";
 import TherapistAdmin from "./pages/TherapistAdmin";
+import VideoCallPage from "./pages/VideoCall";
+import ExercisePlayer from "./pages/ExercisePlayer";
 import Unauthorized from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
 
@@ -36,17 +38,34 @@ const App = () => (
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/unauthorized" element={<Unauthorized />} />
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/exercise/:id" element={<ExercisePlayer />} />
+                <Route
+                  path="/video-call/:roomId"
+                  element={
+                    <ProtectedRoute>
+                      <VideoCallPage />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/therapy-session" element={<TherapySession />} />
                 <Route path="/progress" element={<Progress />} />
                 <Route path="/achievements" element={<Achievements />} />
-                <Route 
-                  path="/therapist" 
+                <Route
+                  path="/therapist"
                   element={
                     <ProtectedRoute requiredRole="therapist">
                       <TherapistAdmin />
                     </ProtectedRoute>
-                  } 
+                  }
+                />
+                <Route
+                  path="/therapist-dashboard"
+                  element={
+                    <ProtectedRoute requiredRole="therapist">
+                      <TherapistAdmin />
+                    </ProtectedRoute>
+                  }
                 />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />

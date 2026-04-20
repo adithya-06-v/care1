@@ -1,0 +1,12 @@
+[
+  { "id": 1, "text": "नमस्ते", "type": "word", "difficulty": "easy" },
+  { "id": 2, "text": "सेब", "type": "word", "difficulty": "easy" },
+  { "id": 3, "text": "पानी", "type": "word", "difficulty": "easy" },
+  { "id": 4, "text": "किताब", "type": "word", "difficulty": "easy" },
+  { "id": 5, "text": "घर", "type": "word", "difficulty": "easy" },
+  { "id": 6, "text": "बिल्ली", "type": "word", "difficulty": "easy" },
+  { "id": 7, "text": "कुत्ता", "type": "word", "difficulty": "easy" },
+  { "id": 8, "text": "फूल", "type": "word", "difficulty": "easy" },
+  { "id": 9, "text": "मेरा नाम अच्छा है", "type": "sentence", "difficulty": "easy" },
+  { "id": 10, "text": "आज मौसम बहुत अच्छा है", "type": "sentence", "difficulty": "easy" }
+]

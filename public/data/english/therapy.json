@@ -1,0 +1,93 @@
+[
+  {
+    "id": 1,
+    "text": "Ship vs Sheep",
+    "type": "minimal_pair",
+    "difficulty": "easy",
+    "focus": "vowel contrast",
+    "hint": "Short i vs long ee sound",
+    "example": "The ship is on the sea | The sheep is in the field"
+  },
+  {
+    "id": 2,
+    "text": "Bat vs Bet",
+    "type": "minimal_pair",
+    "difficulty": "easy",
+    "focus": "vowel clarity",
+    "hint": "Open mouth for 'a', relaxed for 'e'",
+    "example": "He hit the bat | He lost the bet"
+  },
+  {
+    "id": 3,
+    "text": "Think vs Sink",
+    "type": "minimal_pair",
+    "difficulty": "medium",
+    "focus": "th sound",
+    "hint": "Place tongue between teeth for 'th'",
+    "example": "Think before you speak | The ship will sink"
+  },
+  {
+    "id": 4,
+    "text": "Three vs Tree",
+    "type": "minimal_pair",
+    "difficulty": "medium",
+    "focus": "th articulation",
+    "hint": "Air should pass through tongue for 'th'",
+    "example": "Three apples | A tall tree"
+  },
+  {
+    "id": 5,
+    "text": "I speak clearly and my voice matters",
+    "type": "sentence",
+    "difficulty": "easy",
+    "focus": "confidence",
+    "hint": "Speak slowly and clearly",
+    "goal": "build confidence"
+  },
+  {
+    "id": 6,
+    "text": "When I slow down and breathe deeply my speech feels smoother",
+    "type": "sentence",
+    "difficulty": "medium",
+    "focus": "breathing",
+    "hint": "Pause and take deep breaths",
+    "goal": "reduce stammering"
+  },
+  {
+    "id": 7,
+    "text": "I would really like to improve the rhythm stress and natural flow of my everyday speech",
+    "type": "sentence",
+    "difficulty": "hard",
+    "focus": "fluency",
+    "hint": "Maintain rhythm and stress patterns",
+    "goal": "improve fluency"
+  },
+
+  {
+    "id": 8,
+    "text": "Pa Ta Ka",
+    "type": "exercise",
+    "difficulty": "medium",
+    "focus": "syllable repetition",
+    "hint": "Repeat clearly and increase speed gradually",
+    "goal": "tongue control"
+  },
+  {
+    "id": 9,
+    "text": "La La La",
+    "type": "exercise",
+    "difficulty": "easy",
+    "focus": "tongue movement",
+    "hint": "Touch tongue to upper teeth ridge",
+    "goal": "articulation"
+  },
+  {
+    "id": 10,
+    "text": "Red leather yellow leather",
+    "type": "tongue_twister",
+    "difficulty": "hard",
+    "focus": "clarity + speed",
+    "hint": "Start slow, then increase speed",
+    "goal": "fluency control"
+  }
+]

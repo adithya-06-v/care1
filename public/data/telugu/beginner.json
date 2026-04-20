@@ -1,0 +1,12 @@
+[
+  { "id": 1, "text": "నమస్కారం", "type": "word", "difficulty": "easy" },
+  { "id": 2, "text": "ఆపిల్", "type": "word", "difficulty": "easy" },
+  { "id": 3, "text": "నీళ్ళు", "type": "word", "difficulty": "easy" },
+  { "id": 4, "text": "పుస్తకం", "type": "word", "difficulty": "easy" },
+  { "id": 5, "text": "ఇల్లు", "type": "word", "difficulty": "easy" },
+  { "id": 6, "text": "పిల్లి", "type": "word", "difficulty": "easy" },
+  { "id": 7, "text": "కుక్క", "type": "word", "difficulty": "easy" },
+  { "id": 8, "text": "పువ్వు", "type": "word", "difficulty": "easy" },
+  { "id": 9, "text": "నా పేరు బాగుంది", "type": "sentence", "difficulty": "easy" },
+  { "id": 10, "text": "ఈ రోజు వాతావరణం చాలా బాగుంది", "type": "sentence", "difficulty": "easy" }
+]

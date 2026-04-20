@@ -1,0 +1,21 @@
+[
+  { "id": 1, "text": "Ephemeral", "type": "word", "difficulty": "hard" },
+  { "id": 2, "text": "Eloquent", "type": "word", "difficulty": "hard" },
+  { "id": 3, "text": "Resilient", "type": "word", "difficulty": "hard" },
+  { "id": 4, "text": "Ambiguous", "type": "word", "difficulty": "hard" },
+  { "id": 5, "text": "Conscientious", "type": "word", "difficulty": "hard" },
+
+  { "id": 6, "text": "Meticulous", "type": "word", "difficulty": "hard" },
+  { "id": 7, "text": "Phenomenon", "type": "word", "difficulty": "hard" },
+  { "id": 8, "text": "Articulation", "type": "word", "difficulty": "hard" },
+  { "id": 9, "text": "Intellectual", "type": "word", "difficulty": "hard" },
+  { "id": 10, "text": "Communication", "type": "word", "difficulty": "hard" },
+
+  { "id": 11, "text": "After walking through the mysterious forest they discovered an ancient hidden temple", "type": "sentence", "difficulty": "hard" },
+  { "id": 12, "text": "Today I would like to share with you an important topic please allow me to explain my thoughts clearly", "type": "sentence", "difficulty": "hard" },
+  { "id": 13, "text": "The distinguished professor eloquently described the fundamental principles of quantum mechanics", "type": "sentence", "difficulty": "hard" },
+
+  { "id": 14, "text": "Effective communication requires clarity confidence and proper articulation of thoughts", "type": "sentence", "difficulty": "hard" },
+  { "id": 15, "text": "She successfully delivered a powerful presentation with excellent pronunciation and fluency", "type": "sentence", "difficulty": "hard" },
+  { "id": 16, "text": "Developing strong speaking skills takes consistent practice and focused effort over time", "type": "sentence", "difficulty": "hard" }
+]

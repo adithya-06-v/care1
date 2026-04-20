@@ -1,0 +1,92 @@
+[
+    {
+      "id": 1,
+      "text": "पा-टा-का",
+      "type": "exercise",
+      "difficulty": "medium",
+      "focus": "syllable repetition",
+      "hint": "धीरे बोलें और फिर गति बढ़ाएं",
+      "goal": "जीभ नियंत्रण सुधारना"
+    },
+    {
+      "id": 2,
+      "text": "ला ला ला",
+      "type": "exercise",
+      "difficulty": "easy",
+      "focus": "tongue movement",
+      "hint": "जीभ को ऊपर के दांतों के पीछे छुएं",
+      "goal": "उच्चारण स्पष्ट करना"
+    },
+    {
+      "id": 3,
+      "text": "क ख ग घ",
+      "type": "exercise",
+      "difficulty": "medium",
+      "focus": "consonant clarity",
+      "hint": "हर ध्वनि को स्पष्ट बोलें",
+      "goal": "व्यंजन उच्चारण सुधारना"
+    },
+    {
+      "id": 4,
+      "text": "अ आ इ ई उ ऊ",
+      "type": "exercise",
+      "difficulty": "easy",
+      "focus": "vowel practice",
+      "hint": "मुंह खोलकर साफ बोलें",
+      "goal": "स्वर स्पष्टता"
+    },
+    {
+      "id": 5,
+      "text": "मैं साफ और आत्मविश्वास से बोलता हूँ",
+      "type": "sentence",
+      "difficulty": "easy",
+      "focus": "confidence",
+      "hint": "धीरे और स्पष्ट बोलें",
+      "goal": "आत्मविश्वास बढ़ाना"
+    },
+    {
+      "id": 6,
+      "text": "जब मैं धीरे बोलता हूँ तो मेरी आवाज अधिक स्पष्ट होती है",
+      "type": "sentence",
+      "difficulty": "medium",
+      "focus": "breathing",
+      "hint": "गहरी सांस लें और धीरे बोलें",
+      "goal": "हकलाहट कम करना"
+    },
+    {
+      "id": 7,
+      "text": "कच्चा पापड़ पक्का पापड़",
+      "type": "tongue_twister",
+      "difficulty": "hard",
+      "focus": "fluency",
+      "hint": "पहले धीरे बोलें फिर गति बढ़ाएं",
+      "goal": "स्पष्टता और गति सुधारना"
+    },
+    {
+      "id": 8,
+      "text": "चंदू के चाचा ने चंदू की चाची को चांदनी चौक में चांदी के चम्मच से चटनी चटाई",
+      "type": "tongue_twister",
+      "difficulty": "hard",
+      "focus": "articulation",
+      "hint": "हर शब्द को स्पष्ट बोलें",
+      "goal": "उच्चारण और नियंत्रण सुधारना"
+    },
+    {
+      "id": 9,
+      "text": "साँस अंदर लें 4 सेकंड, रोकें 4 सेकंड, बाहर छोड़ें 4 सेकंड",
+      "type": "exercise",
+      "difficulty": "easy",
+      "focus": "breathing",
+      "hint": "धीरे और नियंत्रित तरीके से करें",
+      "goal": "सांस नियंत्रण सुधारना"
+    },
+    {
+      "id": 10,
+      "text": "ओ और ए ध्वनि का अभ्यास करें",
+      "type": "exercise",
+      "difficulty": "medium",
+      "focus": "lip movement",
+      "hint": "होठों की गोल और चौड़ी आकृति बनाएं",
+      "goal": "उच्चारण सुधारना"
+    }
+  ]

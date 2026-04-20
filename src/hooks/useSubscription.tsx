@@ -1,122 +1,51 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 
-interface Subscription {
-  plan: 'starter' | 'pro';
-  status: string;
-  current_period_end?: string;
-  stripe_customer_id?: string;
-}
-
-interface SubscriptionContextType {
-  subscription: Subscription | null;
-  isPro: boolean;
+type SubscriptionContextType = {
+  subscription: any;
   isLoading: boolean;
+  isPro: boolean;
   refreshSubscription: () => Promise<void>;
   createCheckout: () => Promise<void>;
   openBillingPortal: () => Promise<void>;
-}
+};
 
-const SubscriptionContext = createContext<SubscriptionContextType>({
-  subscription: null,
-  isPro: false,
-  isLoading: true,
-  refreshSubscription: async () => {},
-  createCheckout: async () => {},
-  openBillingPortal: async () => {},
-});
-
-export const useSubscription = () => useContext(SubscriptionContext);
+const SubscriptionContext = createContext<SubscriptionContextType | null>(null);
 
 export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
-  const { user, session } = useAuth();
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const fetchSubscription = async () => {
-    if (!user || !session) {
-      setSubscription(null);
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase.functions.invoke('get-subscription', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-
-      if (error) throw error;
-      
-      setSubscription(data as Subscription);
-    } catch (error) {
-      console.error('Error fetching subscription:', error);
-      setSubscription({ plan: 'starter', status: 'active' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [subscription, setSubscription] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    fetchSubscription();
-  }, [user, session]);
+    setSubscription(null);
+    setIsLoading(false);
+  }, []);
 
-  const isPro = subscription?.plan === 'pro' && subscription?.status === 'active';
-
-  const createCheckout = async () => {
-    if (!session) return;
-
-    try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-
-      if (error) throw error;
-
-      if (data?.url) {
-        window.open(data.url, '_blank');
-      }
-    } catch (error) {
-      console.error('Error creating checkout:', error);
-      throw error;
-    }
-  };
-
-  const openBillingPortal = async () => {
-    if (!session) return;
-
-    try {
-      const { data, error } = await supabase.functions.invoke('create-portal-session', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-
-      if (error) throw error;
-
-      if (data?.url) {
-        window.open(data.url, '_blank');
-      }
-    } catch (error) {
-      console.error('Error opening billing portal:', error);
-      throw error;
-    }
+  const value: SubscriptionContextType = {
+    subscription,
+    isLoading,
+    isPro: false,
+    refreshSubscription: async () => {},
+    createCheckout: async () => {},
+    openBillingPortal: async () => {},
   };
 
   return (
-    <SubscriptionContext.Provider value={{ 
-      subscription, 
-      isPro, 
-      isLoading, 
-      refreshSubscription: fetchSubscription,
-      createCheckout,
-      openBillingPortal,
-    }}>
+    <SubscriptionContext.Provider value={value}>
       {children}
     </SubscriptionContext.Provider>
   );
+};
+
+export const useSubscription = () => {
+  const context = useContext(SubscriptionContext);
+  if (!context) {
+    throw new Error("useSubscription must be used within SubscriptionProvider");
+  }
+  return context;
 };
