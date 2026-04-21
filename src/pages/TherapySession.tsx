@@ -98,6 +98,7 @@ const TherapySession = () => {
 
   const duration = parseInt(searchParams.get("duration") || "10", 10);
   const sessionMode = searchParams.get("mode"); // 'focused' mode for sound-focused practice
+  const preference = searchParams.get("preference") as 'word' | 'sentence' | null;
   const [sessionLimitReached, setSessionLimitReached] = useState(false);
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
@@ -425,6 +426,7 @@ const TherapySession = () => {
         duration,
         adaptiveDataRef.current ?? undefined,
         result.data,
+        preference || undefined,
       );
 
       if (cancelled) return;
@@ -830,10 +832,7 @@ const TherapySession = () => {
 
   const handleSkipExercise = () => {
     stopRecording();
-    const score = 70 + Math.random() * 25;
-    setAccuracyScores((prev) => [...prev, score]);
-    setExercisesCompleted((prev) => prev + 1);
-
+    // Skipping does NOT count as completed — only real attempts do
     if (currentExerciseIndex < exercises.length - 1) {
       setCurrentExerciseIndex((prev) => prev + 1);
     } else if (timeRemaining > 0) {
@@ -936,6 +935,7 @@ const TherapySession = () => {
         duration={duration}
         exercisesCompleted={exercisesCompleted}
         totalExercises={exercises.length}
+        from={searchParams.get("from")}
       />
     );
   }
@@ -992,46 +992,7 @@ const TherapySession = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex items-center gap-1.5">
-            <Globe className="w-4 h-4 text-muted-foreground" />
-            <select
-              value={selectedLanguage}
-              onChange={(e) => setSelectedLanguage(e.target.value)}
-              disabled={isDatasetLoading}
-              className="text-sm bg-muted/50 border border-border rounded-lg px-2 py-1.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-            >
-              <option value="english">English</option>
-              <option value="hindi">Hindi</option>
-              <option value="telugu">Telugu</option>
-            </select>
-          </div>
 
-          <div className="flex items-center gap-1.5">
-            <BookOpen className="w-4 h-4 text-muted-foreground" />
-            <select
-              value={selectedMode}
-              onChange={(e) => setSelectedMode(e.target.value)}
-              disabled={isDatasetLoading}
-              className="text-sm bg-muted/50 border border-border rounded-lg px-2 py-1.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-            >
-              <option value="beginner">Beginner</option>
-              <option value="intermediate">Intermediate</option>
-              <option value="advanced">Advanced</option>
-              <option value="therapy">Therapy</option>
-            </select>
-          </div>
-
-          {isDatasetLoading && (
-            <Loader2 className="w-4 h-4 text-primary animate-spin" />
-          )}
-
-          {usingFallback && !isDatasetLoading && datasetSource && (
-            <span className="text-xs text-amber-500">
-              Using {datasetSource.replace("/", " ")} dataset (fallback)
-            </span>
-          )}
-        </div>
 
         <AnimatePresence mode="wait">
           {showFeedback && currentFeedback ? (

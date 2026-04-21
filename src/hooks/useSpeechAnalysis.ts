@@ -200,8 +200,7 @@ export const useSpeechAnalysis = (): UseSpeechAnalysisReturn => {
         improvementTip += `. ${mismatchHint}`;
       }
 
-      const needsWordDrill = isSentence &&
-        (pronunciationScore < 60 || (analysis.skippedWords.length + analysis.incorrectWords.length) >= 2);
+      const needsWordDrill = isSentence && (analysis.skippedWords.length > 0 || analysis.incorrectWords.length > 0);
 
       const result: SpeechAnalysisResult = {
         recognizedText,

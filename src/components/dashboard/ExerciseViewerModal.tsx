@@ -67,13 +67,8 @@ export function ExerciseViewerModal({
       if (cancelled) return;
 
       if (error) {
-        console.error('[ExerciseViewerModal] exercise fetch:', error.message);
+        console.warn('[ExerciseViewerModal] exercise fetch error (table may not exist yet):', error.message);
         setResolvedExercise(exercise);
-        toast({
-          title: 'Using cached exercise',
-          description: 'Could not refresh from the server; showing the list copy.',
-          variant: 'destructive',
-        });
       } else if (data) {
         setResolvedExercise(data);
       } else {

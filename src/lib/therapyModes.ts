@@ -1,7 +1,7 @@
 // Therapy Mode Configuration
 // Defines different exercise styles, feedback wording, and difficulty logic for each mode
 
-export type TherapyMode = 'pronunciation' | 'fluency' | 'child_development' | 'accent';
+export type TherapyMode = 'pronunciation' | 'fluency' | 'child_development' | 'accent' | 'vocabulary' | 'confidence';
 
 export interface TherapyModeConfig {
   id: TherapyMode;
@@ -110,7 +110,7 @@ export const THERAPY_MODES: Record<TherapyMode, TherapyModeConfig> = {
     icon: '🧒',
     color: 'from-amber-500/20 to-orange-500/20',
     exerciseTypes: ['pronunciation', 'word_repetition', 'syllable_drill', 'sentence_reading'],
-    mappedGoals: ['child_development', 'pronunciation', 'vocabulary'],
+    mappedGoals: ['child_development'],
     difficultyThresholds: {
       excellent: 80,
       good: 65,
@@ -145,7 +145,7 @@ export const THERAPY_MODES: Record<TherapyMode, TherapyModeConfig> = {
     icon: '🌍',
     color: 'from-emerald-500/20 to-teal-500/20',
     exerciseTypes: ['intonation', 'minimal_pairs', 'sentence_reading', 'word_repetition'],
-    mappedGoals: ['accent', 'pronunciation', 'confidence'],
+    mappedGoals: ['accent'],
     difficultyThresholds: {
       excellent: 88,
       good: 72,
@@ -171,6 +171,68 @@ export const THERAPY_MODES: Record<TherapyMode, TherapyModeConfig> = {
       'Mimic the rhythm and melody of speech.',
       'Record and compare with native examples.',
       'Pay attention to vowel length differences.',
+    ],
+  },
+  vocabulary: {
+    id: 'vocabulary',
+    name: 'Vocabulary Building',
+    description: 'Learn and practice new words and their usage',
+    icon: '📚',
+    color: 'from-blue-500/20 to-cyan-500/20',
+    exerciseTypes: ['word_repetition', 'pronunciation', 'minimal_pairs'],
+    mappedGoals: ['vocabulary', 'pronunciation'],
+    difficultyThresholds: {
+      excellent: 90,
+      good: 75,
+      needsPractice: 60,
+    },
+    feedbackLabels: {
+      excellent: 'Word Master! 📚',
+      great: 'Great Vocabulary!',
+      good: 'Well Spoken!',
+      keepTrying: 'Expanding Your Lexicon!',
+      needsWork: 'Keep Practicing!',
+    },
+    encouragements: [
+      'Each new word is a building block for better communication.',
+      'Your vocabulary is growing day by day!',
+      'Confidence starts with the right words.',
+    ],
+    tips: [
+      'Try using your new words in daily conversation.',
+      'Group related words together to remember them better.',
+      'Practice the pronunciation and the meaning together.',
+    ],
+  },
+  confidence: {
+    id: 'confidence',
+    name: 'Slow Speech Confidence',
+    description: 'Build confidence through controlled, steady speech',
+    icon: '💪',
+    color: 'from-purple-500/20 to-pink-500/20',
+    exerciseTypes: ['breathing', 'intonation', 'sentence_reading'],
+    mappedGoals: ['confidence', 'fluency'],
+    difficultyThresholds: {
+      excellent: 85,
+      good: 70,
+      needsPractice: 55,
+    },
+    feedbackLabels: {
+      excellent: 'Total Confidence! 💪',
+      great: 'Steady and Strong!',
+      good: 'Nice Control!',
+      keepTrying: 'Finding Your Voice!',
+      needsWork: 'Take Your Time!',
+    },
+    encouragements: [
+      'Confidence is the result of consistent practice.',
+      'You are speaking with more authority every day.',
+      'Believe in your voice - it matters!',
+    ],
+    tips: [
+      'Maintain good posture while speaking.',
+      'Speak slowly and intentionally.',
+      'Look into the mirror and practice speaking with a smile.',
     ],
   },
 };

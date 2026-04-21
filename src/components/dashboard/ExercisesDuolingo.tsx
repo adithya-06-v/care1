@@ -54,13 +54,8 @@ export function ExercisesDuolingo({ userId }: ExercisesDuolingoProps) {
         .order('title', { ascending: true });
 
       if (error) {
-        console.error('[ExercisesDuolingo] exercises fetch error:', error);
+        console.warn('[ExercisesDuolingo] exercises fetch error (table may not exist yet):', error.message);
         setExercises([]);
-        toast({
-          title: 'Could not load exercises',
-          description: error.message,
-          variant: 'destructive',
-        });
         return;
       }
 
@@ -76,13 +71,8 @@ export function ExercisesDuolingo({ userId }: ExercisesDuolingoProps) {
         .eq('user_id', userId);
 
       if (progressError) {
-        console.error('[ExercisesDuolingo] exercises_progress fetch error:', progressError);
+        console.warn('[ExercisesDuolingo] exercises_progress fetch error (table may not exist yet):', progressError.message);
         setProgressRows([]);
-        toast({
-          title: 'Could not load progress',
-          description: progressError.message,
-          variant: 'destructive',
-        });
       } else {
         console.log('[ExercisesDuolingo] progress data:', progressData);
         setProgressRows(progressData ?? []);

@@ -18,6 +18,7 @@ import Achievements from "./pages/Achievements";
 import TherapistAdmin from "./pages/TherapistAdmin";
 import VideoCallPage from "./pages/VideoCall";
 import ExercisePlayer from "./pages/ExercisePlayer";
+import Games from "./pages/Games";
 import Unauthorized from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
 
@@ -50,6 +51,7 @@ const App = () => (
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/therapy-session" element={<TherapySession />} />
                 <Route path="/progress" element={<Progress />} />
+                <Route path="/games" element={<Games />} />
                 <Route path="/achievements" element={<Achievements />} />
                 <Route
                   path="/therapist"

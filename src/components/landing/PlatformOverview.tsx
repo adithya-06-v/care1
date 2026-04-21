@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Target, Clock, Globe } from "lucide-react";
+import { Target, Clock, Gamepad2 } from "lucide-react";
 
 const features = [
   {
@@ -15,10 +15,10 @@ const features = [
     description: "Practice anytime, anywhere you need",
   },
   {
-    icon: Globe,
-    stat: "40+",
-    label: "Languages Supported",
-    description: "Multilingual therapy for global access",
+    icon: Gamepad2,
+    stat: "Fun & Engaging",
+    label: "Gamified Learning",
+    description: "Interactive exercises designed to keep kids motivated",
   },
 ];
 
@@ -40,17 +40,7 @@ const PlatformOverview = () => {
               Experience the future of speech therapy with real-time feedback and 
               evidence-based exercises.
             </p>
-            <div className="flex items-center gap-4">
-              <img
-                src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=100&h=100&q=80"
-                alt="Dr. Sarah Chen"
-                className="w-12 h-12 rounded-full object-cover border-2 border-accent"
-              />
-              <div>
-                <p className="font-semibold text-foreground">Dr. Sarah Chen</p>
-                <p className="text-sm text-muted-foreground">Chief Speech Pathologist</p>
-              </div>
-            </div>
+
           </div>
 
           {/* Right Content - Feature Cards */}

@@ -105,7 +105,7 @@ export const DoctorCard = ({
     <Card
       className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card shadow-card transition-all duration-200 hover:scale-105 hover:shadow-card-hover"
     >
-      <div className="aspect-square w-full overflow-hidden bg-muted">
+      <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
         <img
           src={imgSrc}
           alt={name}
@@ -115,16 +115,16 @@ export const DoctorCard = ({
           onError={() => setImgSrc((s) => (s === fallbackAvatar ? s : fallbackAvatar))}
         />
       </div>
-      <CardContent className="flex flex-1 flex-col gap-2 p-4">
-        <h3 className="text-lg font-semibold leading-tight text-foreground">{name}</h3>
-        <p className="text-sm font-medium text-primary">{qualification}</p>
-        <p className="text-xs text-muted-foreground">{experience}</p>
-        <p className="text-sm text-foreground/90">{specialization}</p>
+      <CardContent className="flex flex-1 flex-col gap-1 p-3">
+        <h3 className="text-base font-semibold leading-tight text-foreground">{name}</h3>
+        <p className="text-xs font-medium text-primary">{qualification}</p>
+        <p className="text-[11px] text-muted-foreground">{experience}</p>
+        <p className="text-xs text-foreground/90">{specialization}</p>
       </CardContent>
-      <CardFooter className="border-t border-border/60 p-4 pt-0">
+      <CardFooter className="border-t border-border/60 p-3 pt-0 mt-1">
         <Button
           type="button"
-          size="lg"
+          size="sm"
           className="w-full rounded-pill shadow-button transition-all hover:shadow-card-hover"
           onClick={handleBookSession}
         >

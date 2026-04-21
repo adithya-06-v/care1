@@ -267,14 +267,9 @@ export function PersonalizedExercises({
         .order('title', { ascending: true });
 
       if (allErr) {
-        console.error('[PersonalizedExercises] exercises fetch error:', allErr);
+        console.warn('[PersonalizedExercises] exercises fetch error (table may not exist yet):', allErr.message);
         setFullVideoCatalog([]);
         setWeaknessRecommendedList([]);
-        toast({
-          title: 'Could not load exercises',
-          description: allErr.message,
-          variant: 'destructive',
-        });
         return;
       }
 

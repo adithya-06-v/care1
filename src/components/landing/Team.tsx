@@ -3,28 +3,34 @@ import { Linkedin, Twitter } from "lucide-react";
 
 const teamMembers = [
   {
-    name: "Dr. Sarah Chen",
-    role: "Chief Speech Pathologist",
-    image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=400&h=400&q=80",
-    bio: "20+ years experience in pediatric speech therapy",
+    name: "Dr. Priya Sharma",
+    role: "Speech Pathologist",
+    image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=400&fit=crop&q=80",
+    bio: "8+ years experience specializing in Fluency & Stammering",
   },
   {
-    name: "Dr. Michael Torres",
+    name: "Dr. Anjali Verma",
     role: "Language Pathologist",
-    image: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=400&h=400&q=80",
-    bio: "Specialist in adult speech rehabilitation",
+    image: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&h=400&fit=crop&q=80",
+    bio: "10+ years experience in Child Speech & Language development",
   },
   {
-    name: "Dr. Emily Nakamura",
-    role: "AI Research Lead",
-    image: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&w=400&h=400&q=80",
-    bio: "Pioneer in AI-driven speech recognition",
+    name: "Dr. Rahul Mehta",
+    role: "Clinical Specialist",
+    image: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&h=400&fit=crop&q=80",
+    bio: "6+ years experience focusing on Accent & Intonation",
   },
   {
-    name: "Dr. James Wilson",
-    role: "Clinical Director",
-    image: "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=400&h=400&q=80",
-    bio: "Board-certified speech-language pathologist",
+    name: "Dr. Arjun Reddy",
+    role: "Communicative Specialist",
+    image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=400&fit=crop&auto=format&q=80",
+    bio: "12+ years experience in Pronunciation & Articulation",
+  },
+  {
+    name: "Dr. Kavita Nair",
+    role: "Fluency Specialist",
+    image: "https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=400&h=400&fit=crop&q=80",
+    bio: "5+ years experience in Voice Therapy & Resonance",
   },
 ];
 
@@ -44,7 +50,7 @@ const Team = () => {
         </div>
 
         {/* Team Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
           {teamMembers.map((member, index) => (
             <Card 
               key={member.name}

@@ -36,6 +36,7 @@ interface SessionSummaryProps {
   duration: number;
   exercisesCompleted: number;
   totalExercises: number;
+  from?: string | null;
 }
 
 export const SessionSummary = ({
@@ -43,6 +44,7 @@ export const SessionSummary = ({
   duration,
   exercisesCompleted,
   totalExercises,
+  from,
 }: SessionSummaryProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -380,11 +382,11 @@ export const SessionSummary = ({
               )}
               <Button
                 size="lg"
-                onClick={() => navigate('/dashboard')}
+                onClick={() => from === 'games' ? navigate('/games') : navigate('/dashboard')}
                 className="w-full shadow-button"
               >
                 <CalendarCheck className="w-5 h-5 mr-2" />
-                Back to Dashboard
+                {from === 'games' ? 'Back to Games Hub' : 'Back to Dashboard'}
               </Button>
               <Button
                 variant="outline"

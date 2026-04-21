@@ -30,13 +30,8 @@ export function SpeechTherapyExercisesSection({ userId }: SpeechTherapyExercises
         .order('title', { ascending: true });
 
       if (error) {
-        console.error('[SpeechTherapyExercisesSection] exercises fetch error:', error);
+        console.warn('[SpeechTherapyExercisesSection] exercises fetch error (table may not exist yet):', error.message);
         setExercises([]);
-        toast({
-          title: 'Could not load exercises',
-          description: error.message,
-          variant: 'destructive',
-        });
         return;
       }
 
@@ -49,13 +44,8 @@ export function SpeechTherapyExercisesSection({ userId }: SpeechTherapyExercises
         .eq('user_id', userId);
 
       if (ueError) {
-        console.error('[SpeechTherapyExercisesSection] user_exercises fetch error:', ueError);
+        console.warn('[SpeechTherapyExercisesSection] user_exercises fetch error (table may not exist yet):', ueError.message);
         setUserRows([]);
-        toast({
-          title: 'Could not load your progress',
-          description: ueError.message,
-          variant: 'destructive',
-        });
       } else {
         console.log('[SpeechTherapyExercisesSection] user_exercises data:', ueData);
         setUserRows(ueData ?? []);

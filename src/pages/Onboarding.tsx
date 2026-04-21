@@ -19,7 +19,6 @@ import { Button } from '@/components/ui/button';
 const STEPS = [
   { id: 'welcome', icon: Sparkles, title: 'Welcome' },
   { id: 'age', icon: User, title: 'Age Group' },
-  { id: 'language', icon: Globe, title: 'Language' },
   { id: 'goals', icon: Target, title: 'Goals' },
   { id: 'difficulty', icon: BarChart3, title: 'Difficulty' },
   { id: 'complete', icon: PartyPopper, title: 'Complete' },
@@ -31,14 +30,7 @@ const AGE_GROUPS = [
   { value: 'adult', label: 'Adult', sublabel: '18+ years', emoji: '🧑' },
 ];
 
-const LANGUAGES = [
-  { value: 'English', emoji: '🇬🇧' },
-  { value: 'Hindi', emoji: '🇮🇳' },
-  { value: 'Spanish', emoji: '🇪🇸' },
-  { value: 'French', emoji: '🇫🇷' },
-  { value: 'German', emoji: '🇩🇪' },
-  { value: 'Mandarin', emoji: '🇨🇳' },
-];
+
 
 const GOALS = [
   { value: 'pronunciation', label: 'Pronunciation clarity', icon: '🎯' },
@@ -64,7 +56,6 @@ const Onboarding = () => {
 
   // Form state
   const [ageGroup, setAgeGroup] = useState('');
-  const [language, setLanguage] = useState('');
   const [goals, setGoals] = useState<string[]>([]);
   const [difficulty, setDifficulty] = useState('');
 
@@ -103,10 +94,9 @@ const Onboarding = () => {
     switch (currentStep) {
       case 0: return true; // Welcome
       case 1: return ageGroup !== '';
-      case 2: return language !== '';
-      case 3: return goals.length > 0;
-      case 4: return difficulty !== '';
-      case 5: return true; // Complete
+      case 2: return goals.length > 0;
+      case 3: return difficulty !== '';
+      case 4: return true; // Complete
       default: return false;
     }
   };
@@ -129,7 +119,6 @@ const Onboarding = () => {
         .from('profiles')
         .update({
           age_group: ageGroup,
-          preferred_language: language,
           goals: goals,
           difficulty: difficulty,
           onboarding_completed: true,
@@ -261,34 +250,10 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* Step 2: Language */}
-            {currentStep === 2 && (
-              <div>
-                <h2 className="text-2xl font-bold text-white text-center mb-2">
-                  Select your primary language
-                </h2>
-                <p className="text-white/50 text-center mb-8">Choose your preferred therapy language</p>
-                <div className="grid grid-cols-2 gap-3">
-                  {LANGUAGES.map((lang) => (
-                    <button
-                      key={lang.value}
-                      onClick={() => setLanguage(lang.value)}
-                      className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${
-                        language === lang.value
-                          ? 'border-[hsl(174,73%,50%)] bg-[hsl(174,73%,40%)/10]'
-                          : 'border-white/10 bg-white/5 hover:border-white/30'
-                      }`}
-                    >
-                      <span className="text-2xl">{lang.emoji}</span>
-                      <span className="text-white font-medium">{lang.value}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
 
-            {/* Step 3: Goals */}
-            {currentStep === 3 && (
+
+            {/* Step 2: Goals */}
+            {currentStep === 2 && (
               <div>
                 <h2 className="text-2xl font-bold text-white text-center mb-2">
                   What would you like help with?
@@ -322,8 +287,8 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* Step 4: Difficulty */}
-            {currentStep === 4 && (
+            {/* Step 3: Difficulty */}
+            {currentStep === 3 && (
               <div>
                 <h2 className="text-2xl font-bold text-white text-center mb-2">
                   How would you rate the speech difficulty?
@@ -353,8 +318,8 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* Step 5: Complete */}
-            {currentStep === 5 && (
+            {/* Step 4: Complete */}
+            {currentStep === 4 && (
               <div className="text-center">
                 <div className="w-20 h-20 rounded-full bg-[hsl(174,73%,40%)/20] flex items-center justify-center mx-auto mb-6">
                   <PartyPopper className="w-10 h-10 text-[hsl(174,73%,50%)]" />
@@ -370,11 +335,6 @@ const Onboarding = () => {
                     <User className="w-4 h-4 text-[hsl(174,73%,50%)]" />
                     <span className="text-white/70 text-sm">Age Group:</span>
                     <span className="text-white font-medium text-sm capitalize">{ageGroup}</span>
-                  </div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Globe className="w-4 h-4 text-[hsl(174,73%,50%)]" />
-                    <span className="text-white/70 text-sm">Language:</span>
-                    <span className="text-white font-medium text-sm">{language}</span>
                   </div>
                   <div className="flex items-center gap-2 mb-2">
                     <Target className="w-4 h-4 text-[hsl(174,73%,50%)]" />
@@ -401,7 +361,7 @@ const Onboarding = () => {
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   Saving...
                 </span>
-              ) : currentStep === 5 ? (
+              ) : currentStep === 4 ? (
                 <span className="flex items-center gap-2">
                   Go to Dashboard
                   <ArrowRight className="w-5 h-5" />

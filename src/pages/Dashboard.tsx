@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,7 +11,7 @@ import {
   LogOut, 
   Mic, 
   BarChart3, 
-  Globe, 
+  Gamepad2, 
   Play, 
   Trophy,
   Clock,
@@ -73,10 +74,8 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [selectedLanguage, setSelectedLanguage] = useState('English');
   const [sessionDuration, setSessionDuration] = useState('');
-  const [languageDialogOpen, setLanguageDialogOpen] = useState(false);
-  const languageSectionRef = useRef<HTMLDivElement>(null);
+  const [practiceMode, setPracticeMode] = useState<'word' | 'sentence'>('sentence');
   const [showProWelcome, setShowProWelcome] = useState(false);
   const [sessionStats, setSessionStats] = useState<SessionStats>({
     totalSessions: 0,
@@ -144,7 +143,6 @@ const Dashboard = () => {
             therapy_mode: (profileData.therapy_mode as TherapyMode) || 'pronunciation',
             pro_popup_seen: profileData.pro_popup_seen ?? false,
           });
-          setSelectedLanguage(profileData.preferred_language || 'English');
         }
 
         // Fetch session stats from sessions table for accurate data
@@ -293,7 +291,7 @@ const Dashboard = () => {
       return;
     }
 
-    navigate(`/therapy-session?duration=${minutes}`);
+    navigate(`/therapy-session?duration=${minutes}&preference=${practiceMode}`);
   };
 
   const formatPracticeTime = (minutes: number) => {
@@ -471,6 +469,7 @@ const Dashboard = () => {
           <TherapyModeSelector 
             userId={user.id} 
             currentMode={profile?.therapy_mode || 'pronunciation'}
+            userGoals={profile?.goals || []}
             onModeChange={(mode) => setProfile(prev => prev ? { ...prev, therapy_mode: mode } : null)}
           />
           <RecommendedSession 
@@ -481,40 +480,33 @@ const Dashboard = () => {
 
         {/* Main Actions */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Language Selection */}
-          <Card className="bg-card border-border shadow-card" ref={languageSectionRef}>
+          {/* Gamified Learning */}
+          <Card className="bg-card border-border shadow-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-foreground">
-                <Globe className="w-5 h-5 text-primary" />
-                Select Language
+                <Gamepad2 className="w-5 h-5 text-primary" />
+                Gamified Learning
               </CardTitle>
-              <CardDescription>Choose your therapy language</CardDescription>
+              <CardDescription>Practice speech through fun, interactive games</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {quickLanguages.map((lang) => (
-                  <Button
-                    key={lang}
-                    variant={selectedLanguage === lang ? 'default' : 'outline'}
-                    className={`rounded-xl transition-all ${
-                      selectedLanguage === lang 
-                        ? 'shadow-button' 
-                        : 'hover:bg-muted'
-                    }`}
-                    onClick={() => setSelectedLanguage(lang)}
-                  >
-                    {lang}
-                  </Button>
-                ))}
+              <div className="bg-primary/5 rounded-xl p-4 mb-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                    <Trophy className="w-4 h-4 text-primary" />
+                  </div>
+                  <span className="font-semibold text-sm">Today's Challenge</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Complete 5 pronunciation games to unlock the "Articulation Master" badge!
+                </p>
               </div>
               <Button
-                variant="ghost"
-                size="sm"
-                className="w-full mt-3 text-primary hover:text-primary"
-                onClick={() => setLanguageDialogOpen(true)}
+                className="w-full rounded-xl shadow-button hover:shadow-card-hover transition-all"
+                onClick={() => navigate('/games')}
               >
-                <Plus className="w-4 h-4 mr-2" />
-                More Languages (40+)
+                <Play className="w-4 h-4 mr-2" />
+                Play Speech Games
               </Button>
             </CardContent>
           </Card>
@@ -529,22 +521,36 @@ const Dashboard = () => {
               <CardDescription>Choose your session duration</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">
-                  Session Duration
-                </label>
-                <Input
-                  type="number"
-                  placeholder="Enter minutes e.g. 7, 12, 25"
-                  value={sessionDuration}
-                  onChange={(e) => setSessionDuration(e.target.value)}
-                  min={1}
-                  max={120}
-                  className="text-lg"
-                />
-                <p className="text-xs text-muted-foreground mt-2">
-                  Personalized exercises in <strong>{selectedLanguage}</strong> based on your therapy goals
-                </p>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">
+                    Practice Mode
+                  </label>
+                  <Tabs value={practiceMode} onValueChange={(v) => setPracticeMode(v as 'word' | 'sentence')} className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="sentence">Sentence</TabsTrigger>
+                      <TabsTrigger value="word">Word</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">
+                    Session Duration
+                  </label>
+                  <Input
+                    type="number"
+                    placeholder="Enter minutes e.g. 7, 12, 25"
+                    value={sessionDuration}
+                    onChange={(e) => setSessionDuration(e.target.value)}
+                    min={1}
+                    max={120}
+                    className="text-lg"
+                  />
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Personalized exercises based on your therapy goals
+                  </p>
+                </div>
               </div>
               <Button 
                 size="lg" 
@@ -563,55 +569,63 @@ const Dashboard = () => {
         <div className="mt-8">
           <h2 className="text-xl font-semibold text-foreground mb-4">Quick Actions</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Pronunciation Card */}
             <Card 
-              className="bg-card border-border shadow-card hover:shadow-card-hover transition-all cursor-pointer group"
+              className="relative overflow-hidden bg-card border-border shadow-card hover:shadow-card-hover transition-all cursor-pointer group hover:-translate-y-1"
               onClick={() => navigate('/therapy-session?duration=5')}
             >
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3 group-hover:bg-primary/20 transition-colors">
-                  <Mic className="w-6 h-6 text-primary" />
+              <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12 group-hover:bg-primary/10 transition-colors" />
+              <CardContent className="p-6 text-center relative z-10">
+                <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(99,102,241,0.2)]">
+                  <Mic className="w-7 h-7 text-indigo-500" />
                 </div>
-                <p className="font-medium text-foreground">Pronunciation</p>
-                <p className="text-xs text-muted-foreground mt-1">Practice words</p>
+                <p className="font-bold text-foreground text-lg">Pronunciation</p>
+                <p className="text-xs text-muted-foreground mt-1 px-2">Master every sound</p>
               </CardContent>
             </Card>
 
+            {/* Progress Card */}
             <Card 
-              className="bg-card border-border shadow-card hover:shadow-card-hover transition-all cursor-pointer group"
+              className="relative overflow-hidden bg-card border-border shadow-card hover:shadow-card-hover transition-all cursor-pointer group hover:-translate-y-1"
               onClick={() => navigate('/progress')}
             >
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-3 group-hover:bg-accent/20 transition-colors">
-                  <BarChart3 className="w-6 h-6 text-accent-foreground" />
+              <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full -mr-12 -mt-12 group-hover:bg-blue-500/10 transition-colors" />
+              <CardContent className="p-6 text-center relative z-10">
+                <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+                  <BarChart3 className="w-7 h-7 text-blue-500" />
                 </div>
-                <p className="font-medium text-foreground">Progress</p>
-                <p className="text-xs text-muted-foreground mt-1">View reports</p>
+                <p className="font-bold text-foreground text-lg">My Progress</p>
+                <p className="text-xs text-muted-foreground mt-1 px-2">Analyze your data</p>
               </CardContent>
             </Card>
 
+            {/* Achievements Card */}
             <Card 
-              className="bg-card border-border shadow-card hover:shadow-card-hover transition-all cursor-pointer group"
+              className="relative overflow-hidden bg-card border-border shadow-card hover:shadow-card-hover transition-all cursor-pointer group hover:-translate-y-1"
               onClick={() => navigate('/achievements')}
             >
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 rounded-full bg-secondary/30 flex items-center justify-center mx-auto mb-3 group-hover:bg-secondary/50 transition-colors">
-                  <Trophy className="w-6 h-6 text-secondary-foreground" />
+              <div className="absolute top-0 right-0 w-24 h-24 bg-yellow-500/5 rounded-full -mr-12 -mt-12 group-hover:bg-yellow-500/10 transition-colors" />
+              <CardContent className="p-6 text-center relative z-10">
+                <div className="w-14 h-14 rounded-2xl bg-yellow-500/10 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(234,179,8,0.2)]">
+                  <Trophy className="w-7 h-7 text-yellow-500" />
                 </div>
-                <p className="font-medium text-foreground">Achievements</p>
-                <p className="text-xs text-muted-foreground mt-1">View badges</p>
+                <p className="font-bold text-foreground text-lg">Achievements</p>
+                <p className="text-xs text-muted-foreground mt-1 px-2">Collect badges</p>
               </CardContent>
             </Card>
 
+            {/* Speech Games Card */}
             <Card 
-              className="bg-card border-border shadow-card hover:shadow-card-hover transition-all cursor-pointer group"
-              onClick={() => setLanguageDialogOpen(true)}
+              className="relative overflow-hidden bg-card border-border shadow-card hover:shadow-card-hover transition-all cursor-pointer group hover:-translate-y-1"
+              onClick={() => navigate('/games')}
             >
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3 group-hover:bg-muted/80 transition-colors">
-                  <Globe className="w-6 h-6 text-muted-foreground" />
+              <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full -mr-12 -mt-12 group-hover:bg-emerald-500/10 transition-colors" />
+              <CardContent className="p-6 text-center relative z-10">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+                  <Gamepad2 className="w-7 h-7 text-emerald-500" />
                 </div>
-                <p className="font-medium text-foreground">Languages</p>
-                <p className="text-xs text-muted-foreground mt-1">Add more</p>
+                <p className="font-bold text-foreground text-lg">Speech Games</p>
+                <p className="text-xs text-muted-foreground mt-1 px-2">Fun & Interactive</p>
               </CardContent>
             </Card>
           </div>
@@ -627,19 +641,10 @@ const Dashboard = () => {
           />
         </div>
 
-        <BookTherapySessionSection />
+        <BookTherapySessionSection userGoals={profile?.goals || []} />
       </main>
 
-      {/* Language Dialog */}
-      {user && (
-        <LanguageDialog
-          open={languageDialogOpen}
-          onOpenChange={setLanguageDialogOpen}
-          selectedLanguage={selectedLanguage}
-          onLanguageChange={setSelectedLanguage}
-          userId={user.id}
-        />
-      )}
+
 
       {/* Pro Welcome Modal */}
       <Dialog open={showProWelcome} onOpenChange={setShowProWelcome}>

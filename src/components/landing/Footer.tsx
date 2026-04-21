@@ -55,26 +55,6 @@ const Footer = () => {
               Empowering voices through AI-driven speech therapy. 
               Join thousands who have transformed their communication journey.
             </p>
-            
-            {/* Social Links with hover effect */}
-            <div className="mb-8">
-              <SocialLinks socials={socialLinks} className="gap-3" />
-            </div>
-            
-            {/* Newsletter */}
-            <div>
-              <p className="font-semibold mb-3">Subscribe to our newsletter</p>
-              <div className="flex gap-3">
-                <Input 
-                  type="email" 
-                  placeholder="Enter your email" 
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50 rounded-pill"
-                />
-                <Button className="rounded-pill px-6 bg-white text-primary hover:bg-white/90">
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
           </div>
 
           {/* Right - Links */}
@@ -130,15 +110,7 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Bottom Section */}
-        <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-white/50 text-sm">
-            © 2024 CareVoice. All rights reserved.
-          </p>
-          
-          {/* Bottom Social Links - text style matching top */}
-          <SocialLinks socials={socialLinks} className="gap-4" />
-        </div>
+
       </div>
     </footer>
   );

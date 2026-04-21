@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Mic, Globe, Clock, ShieldCheck } from "lucide-react";
+import { Mic, Gamepad2, Clock, ShieldCheck } from "lucide-react";
 
 const floatingFeatures = [
-  { icon: Globe, label: "Multi-language Support" },
+  { icon: Gamepad2, label: "Gamified Learning" },
   { icon: Clock, label: "Real-time Feedback" },
   { icon: ShieldCheck, label: "Certified Professionals" },
 ];

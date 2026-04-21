@@ -10,7 +10,6 @@ import {
   ArrowLeft, 
   User, 
   Mail, 
-  Globe, 
   Target, 
   BarChart3,
   Edit3,
@@ -26,9 +25,7 @@ const AGE_GROUPS = [
   { value: 'adult', label: 'Adult (18+)' },
 ];
 
-const LANGUAGES = [
-  'English', 'Hindi', 'Spanish', 'French', 'German', 'Mandarin'
-];
+
 
 const GOALS = [
   { value: 'pronunciation', label: 'Pronunciation clarity' },
@@ -48,7 +45,6 @@ const DIFFICULTIES = [
 interface ProfileData {
   full_name: string | null;
   age_group: string | null;
-  preferred_language: string | null;
   goals: string[] | null;
   difficulty: string | null;
 }
@@ -63,7 +59,6 @@ const Profile = () => {
 
   // Edit form state
   const [editAgeGroup, setEditAgeGroup] = useState('');
-  const [editLanguage, setEditLanguage] = useState('');
   const [editGoals, setEditGoals] = useState<string[]>([]);
   const [editDifficulty, setEditDifficulty] = useState('');
 
@@ -78,14 +73,13 @@ const Profile = () => {
       if (user) {
         const { data, error } = await supabase
           .from('profiles')
-          .select('full_name, age_group, preferred_language, goals, difficulty')
+          .select('full_name, age_group, goals, difficulty')
           .eq('user_id', user.id)
           .maybeSingle();
 
         if (data && !error) {
           setProfile(data);
           setEditAgeGroup(data.age_group || '');
-          setEditLanguage(data.preferred_language || '');
           setEditGoals(data.goals || []);
           setEditDifficulty(data.difficulty || '');
         }
@@ -115,7 +109,6 @@ const Profile = () => {
         .from('profiles')
         .update({
           age_group: editAgeGroup,
-          preferred_language: editLanguage,
           goals: editGoals,
           difficulty: editDifficulty,
         })
@@ -126,7 +119,6 @@ const Profile = () => {
       setProfile({
         ...profile,
         age_group: editAgeGroup,
-        preferred_language: editLanguage,
         goals: editGoals,
         difficulty: editDifficulty,
       });
@@ -149,7 +141,6 @@ const Profile = () => {
 
   const handleCancel = () => {
     setEditAgeGroup(profile?.age_group || '');
-    setEditLanguage(profile?.preferred_language || '');
     setEditGoals(profile?.goals || []);
     setEditDifficulty(profile?.difficulty || '');
     setIsEditing(false);
@@ -304,27 +295,7 @@ const Profile = () => {
                   </div>
                 </div>
 
-                {/* Language Edit */}
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-3 block">
-                    Primary Language
-                  </label>
-                  <div className="grid grid-cols-3 gap-3">
-                    {LANGUAGES.map((lang) => (
-                      <button
-                        key={lang}
-                        onClick={() => setEditLanguage(lang)}
-                        className={`p-3 rounded-xl border-2 transition-all text-sm ${
-                          editLanguage === lang
-                            ? 'border-primary bg-primary/10 text-foreground'
-                            : 'border-border bg-muted/30 text-muted-foreground hover:border-primary/50'
-                        }`}
-                      >
-                        {lang}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+
 
                 {/* Goals Edit */}
                 <div>
@@ -425,18 +396,7 @@ const Profile = () => {
                   </div>
                 </div>
 
-                {/* Language Display */}
-                <div className="flex items-start gap-4 p-4 bg-muted/30 rounded-xl">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Globe className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Primary Language</p>
-                    <p className="text-foreground font-medium">
-                      {profile?.preferred_language || 'Not set'}
-                    </p>
-                  </div>
-                </div>
+
 
                 {/* Goals Display */}
                 <div className="flex items-start gap-4 p-4 bg-muted/30 rounded-xl">

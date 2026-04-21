@@ -10,181 +10,115 @@ export interface Exercise {
   ageGroup?: string;
 }
 
-// Exercise banks by category
-const pronunciationExercises: Omit<Exercise, 'id'>[] = [
-  // Beginner - Words
-  { type: 'word_repetition', title: 'Simple Sounds', instruction: 'Repeat each word slowly and clearly', content: 'Cat, Dog, Sun, Moon, Ball', difficulty: 'beginner', targetGoal: 'pronunciation' },
-  { type: 'pronunciation', title: 'Vowel Practice', instruction: 'Say each vowel sound three times', content: 'A - E - I - O - U', difficulty: 'beginner', targetGoal: 'pronunciation' },
-  { type: 'syllable_drill', title: 'Two Syllable Words', instruction: 'Break these words into syllables as you say them', content: 'Hap-py, Ta-ble, Win-dow, Ap-ple, Mon-key', difficulty: 'beginner', targetGoal: 'pronunciation' },
-  // Beginner - Sentences
-  { type: 'sentence_reading', title: 'Simple Sentence', instruction: 'Read this sentence clearly', content: 'The cat sat on the mat', difficulty: 'beginner', targetGoal: 'pronunciation' },
-  { type: 'sentence_reading', title: 'Basic Greeting', instruction: 'Practice this common greeting', content: 'Hello, how are you today', difficulty: 'beginner', targetGoal: 'pronunciation' },
-  { type: 'sentence_reading', title: 'Daily Sentence', instruction: 'Read naturally and clearly', content: 'I like to eat apples and bananas', difficulty: 'beginner', targetGoal: 'pronunciation' },
-  // Moderate - Words
-  { type: 'tongue_twister', title: 'Tongue Twister', instruction: 'Read slowly first, then increase speed', content: 'She sells seashells by the seashore', difficulty: 'moderate', targetGoal: 'pronunciation' },
-  { type: 'word_repetition', title: 'Complex Sounds', instruction: 'Focus on the highlighted sounds', content: 'Strength, Rhythm, Twelfth, Clothes, Months', difficulty: 'moderate', targetGoal: 'pronunciation' },
-  // Moderate - Sentences
-  { type: 'sentence_reading', title: 'Sentence Flow', instruction: 'Read naturally with proper pauses', content: 'The quick brown fox jumps over the lazy dog', difficulty: 'moderate', targetGoal: 'pronunciation' },
-  { type: 'sentence_reading', title: 'Descriptive Sentence', instruction: 'Focus on clear pronunciation of each word', content: 'The beautiful garden has many colorful flowers', difficulty: 'moderate', targetGoal: 'pronunciation' },
-  { type: 'sentence_reading', title: 'Action Sentence', instruction: 'Maintain a steady pace throughout', content: 'She quickly ran to catch the bus before it left', difficulty: 'moderate', targetGoal: 'pronunciation' },
-  { type: 'sentence_reading', title: 'Question Practice', instruction: 'Use proper rising intonation for questions', content: 'Would you like to come with me to the store', difficulty: 'moderate', targetGoal: 'pronunciation' },
-  // Severe - Words
-  { type: 'tongue_twister', title: 'Advanced Tongue Twister', instruction: 'Master this challenging phrase', content: 'Peter Piper picked a peck of pickled peppers', difficulty: 'severe', targetGoal: 'pronunciation' },
-  { type: 'pronunciation', title: 'Consonant Clusters', instruction: 'Practice these difficult consonant combinations', content: 'Strengths, Glimpsed, Sculpts, Twelfths, Prompts', difficulty: 'severe', targetGoal: 'pronunciation' },
-  // Severe - Sentences
-  { type: 'sentence_reading', title: 'Complex Sentence', instruction: 'Read this longer sentence clearly and naturally', content: 'The experienced teacher explained the complicated mathematical concept to her eager students', difficulty: 'severe', targetGoal: 'pronunciation' },
-  { type: 'sentence_reading', title: 'Professional Speech', instruction: 'Speak clearly as if in a presentation', content: 'We are pleased to announce the successful completion of our quarterly objectives', difficulty: 'severe', targetGoal: 'pronunciation' },
-  { type: 'sentence_reading', title: 'Narrative Sentence', instruction: 'Read with proper expression and pacing', content: 'After walking through the mysterious forest, they discovered an ancient hidden temple', difficulty: 'severe', targetGoal: 'pronunciation' },
+// 50 Medium to Easy Words
+const wordBank: Omit<Exercise, 'id'>[] = [
+  { type: 'word_repetition', title: 'Basic Word', instruction: 'Speak clearly', content: 'Cat', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Basic Word', instruction: 'Speak clearly', content: 'Dog', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Basic Word', instruction: 'Speak clearly', content: 'Sun', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Basic Word', instruction: 'Speak clearly', content: 'Moon', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Basic Word', instruction: 'Speak clearly', content: 'Ball', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Basic Word', instruction: 'Speak clearly', content: 'Book', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Basic Word', instruction: 'Speak clearly', content: 'Tree', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Basic Word', instruction: 'Speak clearly', content: 'Fish', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Basic Word', instruction: 'Speak clearly', content: 'Bird', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Basic Word', instruction: 'Speak clearly', content: 'Home', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Color Name', instruction: 'Speak clearly', content: 'Blue', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Color Name', instruction: 'Speak clearly', content: 'Green', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Color Name', instruction: 'Speak clearly', content: 'Red', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Color Name', instruction: 'Speak clearly', content: 'Yellow', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Fruit Name', instruction: 'Speak clearly', content: 'Apple', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Basic Need', instruction: 'Speak clearly', content: 'Water', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Basic Food', instruction: 'Speak clearly', content: 'Bread', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Basic Drink', instruction: 'Speak clearly', content: 'Milk', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Emotion', instruction: 'Speak clearly', content: 'Happy', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Action', instruction: 'Speak clearly', content: 'Smile', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Relationship', instruction: 'Speak clearly', content: 'Friend', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Place', instruction: 'Speak clearly', content: 'School', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Object', instruction: 'Speak clearly', content: 'Paper', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Furniture', instruction: 'Speak clearly', content: 'Chair', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Furniture', instruction: 'Speak clearly', content: 'Table', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Structure', instruction: 'Speak clearly', content: 'Window', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Structure', instruction: 'Speak clearly', content: 'Door', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Technology', instruction: 'Speak clearly', content: 'Phone', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Environment', instruction: 'Speak clearly', content: 'Light', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Time', instruction: 'Speak clearly', content: 'Night', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Time', instruction: 'Speak clearly', content: 'Morning', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Season', instruction: 'Speak clearly', content: 'Summer', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Season', instruction: 'Speak clearly', content: 'Winter', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Nature', instruction: 'Speak clearly', content: 'Flower', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Environment', instruction: 'Speak clearly', content: 'Garden', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Hobby', instruction: 'Speak clearly', content: 'Music', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Entertainment', instruction: 'Speak clearly', content: 'Movie', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Food', instruction: 'Speak clearly', content: 'Pizza', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Action', instruction: 'Speak clearly', content: 'Travel', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Adjective', instruction: 'Speak clearly', content: 'Simple', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Adjective', instruction: 'Speak clearly', content: 'Better', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Action', instruction: 'Speak clearly', content: 'Listen', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Action', instruction: 'Speak clearly', content: 'Repeat', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Action', instruction: 'Speak clearly', content: 'Practice', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Noun', instruction: 'Speak clearly', content: 'Success', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Adjective', instruction: 'Speak clearly', content: 'Healthy', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Relationship', instruction: 'Speak clearly', content: 'Family', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Group', instruction: 'Speak clearly', content: 'People', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Nature', instruction: 'Speak clearly', content: 'Animal', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'word_repetition', title: 'Nature', instruction: 'Speak clearly', content: 'Nature', difficulty: 'moderate', targetGoal: 'pronunciation' },
 ];
 
-const fluencyExercises: Omit<Exercise, 'id'>[] = [
-  // Beginner
-  { type: 'breathing', title: 'Deep Breathing', instruction: 'Inhale for 4 seconds, hold for 4, exhale for 4', content: '🌬️ Breathe in... hold... and release slowly. Repeat 5 times.', difficulty: 'beginner', targetGoal: 'fluency' },
-  { type: 'word_repetition', title: 'Single Words', instruction: 'Say each word with a calm breath', content: 'One... Two... Three... Four... Five...', difficulty: 'beginner', targetGoal: 'fluency' },
-  { type: 'breathing', title: 'Relaxation Exercise', instruction: 'Relax your jaw and shoulders while breathing', content: '😌 Release tension, breathe deeply, and feel calm before speaking.', difficulty: 'beginner', targetGoal: 'fluency' },
-  // Moderate
-  { type: 'sentence_reading', title: 'Paced Reading', instruction: 'Read at a slow, steady pace with pauses at commas', content: 'Today is a beautiful day, the sun is shining, and the birds are singing in the trees.', difficulty: 'moderate', targetGoal: 'fluency' },
-  { type: 'breathing', title: 'Speech Breathing', instruction: 'Take a breath before each phrase', content: '🗣️ (breath) Hello there. (breath) How are you today? (breath) I am doing well.', difficulty: 'moderate', targetGoal: 'fluency' },
-  // Severe
-  { type: 'sentence_reading', title: 'Extended Phrases', instruction: 'Maintain steady rhythm through longer sentences', content: 'When I speak clearly and calmly, I feel confident and in control of my words and my message.', difficulty: 'severe', targetGoal: 'fluency' },
-  { type: 'breathing', title: 'Diaphragmatic Control', instruction: 'Speak from your diaphragm with controlled airflow', content: '🎯 Practice: "Ahhhhh" for 10 seconds steadily, then "Mmmmmm" for 10 seconds.', difficulty: 'severe', targetGoal: 'fluency' },
+// 50 Medium to Easy Sentences
+const sentenceBank: Omit<Exercise, 'id'>[] = [
+  { type: 'sentence_reading', title: 'Daily Life', instruction: 'Read naturally', content: 'I like to eat apples', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Observation', instruction: 'Read naturally', content: 'The sun is very bright', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Relationship', instruction: 'Read naturally', content: 'My friend is very kind', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Home', instruction: 'Read naturally', content: 'I live in a house', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Feeling', instruction: 'Read naturally', content: 'The water is so cold', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Activity', instruction: 'Read naturally', content: 'We go to the park', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Observation', instruction: 'Read naturally', content: 'The cat is on the mat', difficulty: 'beginner', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Hobby', instruction: 'Read naturally', content: 'I love reading new books', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Observation', instruction: 'Read naturally', content: 'It is a beautiful day', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Goal', instruction: 'Read naturally', content: 'I want to learn more', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Nature', instruction: 'Read naturally', content: 'The flowers grow in spring', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Transport', instruction: 'Read naturally', content: 'He drives a fast car', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Music', instruction: 'Read naturally', content: 'She plays the piano well', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Travel', instruction: 'Read naturally', content: 'My family loves to travel', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Routine', instruction: 'Read naturally', content: 'I drink milk every morning', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Animal', instruction: 'Read naturally', content: 'The dog is barking loudly', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Activity', instruction: 'Read naturally', content: 'We are going to the mall', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Nature', instruction: 'Read naturally', content: 'The birds sing in trees', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Emotion', instruction: 'Read naturally', content: 'I am feeling very happy', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Action', instruction: 'Read naturally', content: 'Please close the front door', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Nature', instruction: 'Read naturally', content: 'The moon shines at night', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Preference', instruction: 'Read naturally', content: 'I like the color blue', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Request', instruction: 'Read naturally', content: 'Can you help me please', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Home', instruction: 'Read naturally', content: 'I have a small garden', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Object', instruction: 'Read naturally', content: 'The table is made of wood', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Hobby', instruction: 'Read naturally', content: 'Music makes me feel good', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Social', instruction: 'Read naturally', content: 'Lets go out for dinner', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Nature', instruction: 'Read naturally', content: 'I need some fresh air', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Family', instruction: 'Read naturally', content: 'The children are playing', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Social', instruction: 'Read naturally', content: 'I will see you tomorrow', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Health', instruction: 'Read naturally', content: 'Exercise is good for you', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Hobby', instruction: 'Read naturally', content: 'I like to watch movies', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Office', instruction: 'Read naturally', content: 'The paper is on the desk', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Tech', instruction: 'Read naturally', content: 'My phone is on the table', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Clothes', instruction: 'Read naturally', content: 'I wear a warm coat', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Weather', instruction: 'Read naturally', content: 'The rain fell all night', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Learning', instruction: 'Read naturally', content: 'I am learning to speak', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Task', instruction: 'Read naturally', content: 'This is a very easy task', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Nature', instruction: 'Read naturally', content: 'I enjoy walking in nature', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Season', instruction: 'Read naturally', content: 'Summer is my favorite time', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Food', instruction: 'Read naturally', content: 'I like to eat fresh fruit', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Night', instruction: 'Read naturally', content: 'The sky is full of stars', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Social', instruction: 'Read naturally', content: 'I will call you later', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Identity', instruction: 'Read naturally', content: 'My name is very special', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Request', instruction: 'Read naturally', content: 'I want a cup of tea', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Education', instruction: 'Read naturally', content: 'The school is very big', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Media', instruction: 'Read naturally', content: 'I read the news today', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Idiom', instruction: 'Read naturally', content: 'Time flies when you are having fun', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Wisdom', instruction: 'Read naturally', content: 'Practice makes us perfect', difficulty: 'moderate', targetGoal: 'pronunciation' },
+  { type: 'sentence_reading', title: 'Affirmation', instruction: 'Read naturally', content: 'I am doing a great job', difficulty: 'moderate', targetGoal: 'pronunciation' },
 ];
 
-const accentExercises: Omit<Exercise, 'id'>[] = [
-  // Beginner
-  { type: 'minimal_pairs', title: 'Minimal Pairs - Basic', instruction: 'Notice the difference between these similar sounds', content: 'Ship vs Sheep | Bat vs Bet | Cat vs Cut', difficulty: 'beginner', targetGoal: 'accent' },
-  { type: 'intonation', title: 'Question Intonation', instruction: 'Raise your voice at the end for questions', content: 'Are you coming? ↗️ | Is it ready? ↗️ | Do you understand? ↗️', difficulty: 'beginner', targetGoal: 'accent' },
-  // Moderate
-  { type: 'minimal_pairs', title: 'Minimal Pairs - Advanced', instruction: 'Focus on subtle sound differences', content: 'Think vs Sink | Three vs Tree | Path vs Pass', difficulty: 'moderate', targetGoal: 'accent' },
-  { type: 'intonation', title: 'Stress Patterns', instruction: 'Emphasize the capitalized syllable', content: 'reCORD (verb) vs REcord (noun) | proDUCE vs PROduce', difficulty: 'moderate', targetGoal: 'accent' },
-  // Severe
-  { type: 'sentence_reading', title: 'Connected Speech', instruction: 'Practice natural word linking', content: 'What do you want to do? → "Whadaya wanna do?" | Going to → "Gonna"', difficulty: 'severe', targetGoal: 'accent' },
-  { type: 'intonation', title: 'Emotion & Intonation', instruction: 'Express different emotions with the same sentence', content: 'Say "Really?" as: Surprised 😲 | Skeptical 🤨 | Excited 🎉 | Bored 😑', difficulty: 'severe', targetGoal: 'accent' },
-];
-
-const childExercises: Omit<Exercise, 'id'>[] = [
-  { type: 'pronunciation', title: 'Animal Sounds', instruction: 'Make these fun animal sounds!', content: '🐱 Meow! | 🐶 Woof! | 🐮 Moo! | 🐷 Oink! | 🐸 Ribbit!', difficulty: 'beginner', targetGoal: 'child_development', ageGroup: 'child' },
-  { type: 'syllable_drill', title: 'Alphabet Fun', instruction: 'Say each letter with its sound', content: 'A for Apple 🍎 | B for Ball ⚽ | C for Cat 🐱 | D for Dog 🐕', difficulty: 'beginner', targetGoal: 'child_development', ageGroup: 'child' },
-  { type: 'word_repetition', title: 'Colors & Numbers', instruction: 'Say each word three times', content: 'Red 🔴 | Blue 🔵 | One ☝️ | Two ✌️ | Three 🤟', difficulty: 'beginner', targetGoal: 'child_development', ageGroup: 'child' },
-  { type: 'sentence_reading', title: 'Simple Sentences', instruction: 'Read along with the fun sentences', content: 'The cat sat on the mat. 🐱 | I like to play. 🎮 | The sun is bright. ☀️', difficulty: 'moderate', targetGoal: 'child_development', ageGroup: 'child' },
-  { type: 'tongue_twister', title: 'Fun Tongue Twister', instruction: 'Try to say this quickly!', content: 'Red lorry, yellow lorry, red lorry, yellow lorry! 🚗', difficulty: 'moderate', targetGoal: 'child_development', ageGroup: 'child' },
-];
-
-const vocabularyExercises: Omit<Exercise, 'id'>[] = [
-  { type: 'word_repetition', title: 'Daily Words', instruction: 'Learn and repeat these useful words', content: 'Appreciate, Beautiful, Comfortable, Delicious, Excellent', difficulty: 'beginner', targetGoal: 'vocabulary' },
-  { type: 'sentence_reading', title: 'Word in Context', instruction: 'Read how these words are used', content: 'The weather is BEAUTIFUL today. This chair is very COMFORTABLE.', difficulty: 'moderate', targetGoal: 'vocabulary' },
-  { type: 'word_repetition', title: 'Advanced Vocabulary', instruction: 'Practice these sophisticated words', content: 'Serendipity, Ephemeral, Eloquent, Resilient, Ambiguous', difficulty: 'severe', targetGoal: 'vocabulary' },
-];
-
-const confidenceExercises: Omit<Exercise, 'id'>[] = [
-  { type: 'breathing', title: 'Confidence Breath', instruction: 'Stand tall and breathe with confidence', content: '💪 Power Pose: Stand straight, breathe deeply, feel strong!', difficulty: 'beginner', targetGoal: 'confidence' },
-  { type: 'sentence_reading', title: 'Positive Affirmations', instruction: 'Say these with confidence and belief', content: 'I speak clearly. My voice matters. I express myself well. I am confident.', difficulty: 'beginner', targetGoal: 'confidence' },
-  { type: 'sentence_reading', title: 'Introduction Practice', instruction: 'Practice introducing yourself confidently', content: 'Hello, my name is [Your Name]. I am pleased to meet you. How are you today?', difficulty: 'moderate', targetGoal: 'confidence' },
-  { type: 'sentence_reading', title: 'Public Speaking', instruction: 'Practice speaking as if presenting to a group', content: 'Today I would like to share with you an important topic. Please allow me to explain my thoughts clearly.', difficulty: 'severe', targetGoal: 'confidence' },
-];
-
-// Get all exercises
-const getAllExercises = (): Omit<Exercise, 'id'>[] => [
-  ...pronunciationExercises,
-  ...fluencyExercises,
-  ...accentExercises,
-  ...childExercises,
-  ...vocabularyExercises,
-  ...confidenceExercises,
-];
-
-// Mode-first exercise banks so each therapy mode feels distinct.
-const exercisesByMode = {
-  pronunciation: [
-    ...pronunciationExercises,
-    ...vocabularyExercises.filter((exercise) => exercise.type !== 'sentence_reading'),
-    {
-      type: 'sentence_reading',
-      title: 'Presentation Phrase',
-      instruction: 'Read with crisp consonants and clear vowels',
-      content: 'Please pronounce each word carefully so every sound is easy to hear and understand.',
-      difficulty: 'severe',
-      targetGoal: 'pronunciation',
-    },
-  ],
-  fluency: [
-    ...fluencyExercises,
-    ...confidenceExercises.filter((exercise) => exercise.type === 'sentence_reading'),
-    {
-      type: 'sentence_reading',
-      title: 'Smooth Story Phrase',
-      instruction: 'Use gentle starts and steady breathing through the full phrase',
-      content: 'When I slow down, breathe deeply, and keep a relaxed rhythm, my speech feels smoother and more comfortable.',
-      difficulty: 'severe',
-      targetGoal: 'fluency',
-    },
-  ],
-  child_development: [
-    ...childExercises,
-    {
-      type: 'word_repetition',
-      title: 'Playground Words',
-      instruction: 'Say each fun word clearly with a smile',
-      content: 'Rocket, Rainbow, Puppy, Bubble, Cookie',
-      difficulty: 'beginner',
-      targetGoal: 'child_development',
-      ageGroup: 'child',
-    },
-    {
-      type: 'sentence_reading',
-      title: 'Story Time',
-      instruction: 'Read the whole phrase like you are telling a fun story',
-      content: 'The little rabbit hopped through the sunny garden and found a bright red balloon.',
-      difficulty: 'moderate',
-      targetGoal: 'child_development',
-      ageGroup: 'child',
-    },
-  ],
-  accent: [
-    ...accentExercises,
-    ...pronunciationExercises.filter((exercise) => exercise.type === 'minimal_pairs' || exercise.type === 'sentence_reading'),
-    {
-      type: 'sentence_reading',
-      title: 'Natural Speech Pattern',
-      instruction: 'Practice stress, linking, and natural melody across the full phrase',
-      content: 'I would really like to improve the rhythm, stress, and natural flow of my everyday English speech.',
-      difficulty: 'severe',
-      targetGoal: 'accent',
-    },
-  ],
-} as const;
-
-type ModeExerciseBank = keyof typeof exercisesByMode;
-
-// Profile interface for exercise generation
-interface UserProfile {
-  age_group: string | null;
-  preferred_language: string | null;
-  goals: string[] | null;
-  difficulty: string | null;
-  therapy_mode?: string | null;
-}
-
-// Adaptive data for exercise selection
-export interface AdaptiveData {
-  weakExercises: string[];
-  masteredExercises: string[];
-  weakPhonemes: string[];
-  currentDifficulty: 'beginner' | 'moderate' | 'severe';
-  weakSounds?: string[]; // Sounds that need extra practice (e.g., 'r', 'th', 'sh')
-}
-
-// Map goal values to target goals
-const goalMapping: Record<string, string> = {
-  pronunciation: 'pronunciation',
-  fluency: 'fluency',
-  vocabulary: 'vocabulary',
-  accent: 'accent',
-  confidence: 'confidence',
-  child_development: 'child_development',
-};
-
-const getExerciseVarietyBucket = (
+export const getExerciseVarietyBucket = (
   exercise: Omit<Exercise, 'id'>
 ): 'word' | 'sentence' | 'long_phrase' => {
   if (
@@ -208,237 +142,43 @@ const getExerciseVarietyBucket = (
   return 'sentence';
 };
 
-// Check if exercise matches weak phoneme patterns
-const matchesWeakPhoneme = (content: string, weakPhonemes: string[]): boolean => {
-  if (weakPhonemes.length === 0) return false;
-  
-  const lowerContent = content.toLowerCase();
-  const phonemePatterns: Record<string, RegExp> = {
-    'th': /th/g,
-    'sh': /sh/g,
-    'ch': /ch/g,
-    'str': /str/g,
-    'spl': /spl/g,
-    'scr': /scr/g,
-    'r_blend': /[bcdfgpt]r/g,
-    'l_blend': /[bcfgps]l/g,
-    'ng': /ng/g,
-    'nk': /nk/g,
-    'tion': /tion/g,
-    'ough': /ough/g,
-  };
-  
-  return weakPhonemes.some(phoneme => {
-    const regex = phonemePatterns[phoneme];
-    return regex ? regex.test(lowerContent) : false;
-  });
-};
-
-// Check if exercise contains weak sounds (single letters/sounds)
-const containsWeakSound = (content: string, weakSounds: string[]): boolean => {
-  if (!weakSounds || weakSounds.length === 0) return false;
-  
-  const lowerContent = content.toLowerCase();
-  
-  return weakSounds.some(sound => {
-    // Create appropriate regex for each sound type
-    const soundPatterns: Record<string, RegExp> = {
-      'r': /r/gi,
-      'l': /l/gi,
-      's': /s/gi,
-      'th': /th/gi,
-      'sh': /sh/gi,
-      'ch': /ch|tch/gi,
-      'k': /k|c(?![eiy])/gi,
-      'g': /g(?![eiy])/gi,
-      'f': /f|ph/gi,
-      'v': /v/gi,
-      'z': /z/gi,
-      'j': /j|g[eiy]|dge/gi,
-      'w': /w/gi,
-      'y': /y/gi,
-      'p': /p/gi,
-      'b': /b/gi,
-      't': /t(?!h)/gi,
-      'd': /d/gi,
-      'm': /m/gi,
-      'n': /n(?!g)/gi,
-      'ng': /ng/gi,
-      'h': /h/gi,
-    };
-    
-    const regex = soundPatterns[sound];
-    return regex ? regex.test(lowerContent) : lowerContent.includes(sound);
-  });
-};
-
-// Generate personalized exercises based on user profile, adaptive data, and optional loaded dataset
+// Generate personalized exercises based on user profile and preference
 export const generateExercises = (
-  profile: UserProfile,
+  profile: any, // Simplified for bank replacement
   sessionDurationMinutes: number,
-  adaptiveData?: AdaptiveData,
+  adaptiveData?: any,
   datasetExercises?: Omit<Exercise, 'id'>[],
+  practicePreference?: 'word' | 'sentence',
 ): Exercise[] => {
   const exercises: Exercise[] = [];
-  const allExercises = getAllExercises();
   
-  // Use adaptive difficulty if available, otherwise use profile
-  const effectiveDifficulty = adaptiveData?.currentDifficulty || profile.difficulty || 'beginner';
+  // Choose the relevant bank based on preference
+  let primaryBank: Omit<Exercise, 'id'>[] = [];
   
-  const validDifficulties = effectiveDifficulty === 'severe' 
-    ? ['beginner', 'moderate', 'severe']
-    : effectiveDifficulty === 'moderate'
-    ? ['beginner', 'moderate']
-    : ['beginner'];
-
-  const selectedMode: ModeExerciseBank =
-    profile.therapy_mode && profile.therapy_mode in exercisesByMode
-      ? (profile.therapy_mode as ModeExerciseBank)
-      : 'pronunciation';
-
-  // Use loaded dataset exercises if available, otherwise fall back to hardcoded mode banks
-  const primaryExercises: Omit<Exercise, 'id'>[] =
-    datasetExercises && datasetExercises.length > 0
-      ? datasetExercises
-      : [...(exercisesByMode[selectedMode] || exercisesByMode.pronunciation)];
-
-  if (datasetExercises && datasetExercises.length > 0) {
-    console.log(`Using ${datasetExercises.length} exercises from loaded dataset`);
+  if (practicePreference === 'word') {
+    primaryBank = [...wordBank];
+  } else if (practicePreference === 'sentence') {
+    primaryBank = [...sentenceBank];
   } else {
-    console.log(`Using hardcoded exercise bank for mode: ${selectedMode}`);
+    primaryBank = [...wordBank, ...sentenceBank];
   }
 
-  let filteredExercises = primaryExercises.filter(ex => {
-    if (!validDifficulties.includes(ex.difficulty)) return false;
-    if (ex.ageGroup === 'child' && profile.age_group !== 'child') return false;
-    return true;
-  });
+  // Shuffle the bank
+  const shuffledBank = [...primaryBank].sort(() => Math.random() - 0.5);
 
-  // Add supporting material from user goals
-  const userGoals = (profile.goals || [])
-    .map((goal) => goalMapping[goal] || goal)
-    .filter((goal) => goal !== selectedMode);
+  // Calculate number of exercises based on duration (approximately 1 per minute for words, 2 per minute for sentences)
+  // Let's aim for a good variety.
+  const exerciseCount = Math.max(5, Math.ceil(sessionDurationMinutes * 1.5));
 
-  if (userGoals.length > 0) {
-    const supportingExercises = allExercises.filter((exercise) => {
-      if (!validDifficulties.includes(exercise.difficulty)) return false;
-      if (exercise.ageGroup === 'child' && profile.age_group !== 'child') return false;
-      return userGoals.includes(exercise.targetGoal);
-    });
-    filteredExercises = [...filteredExercises, ...supportingExercises.slice(0, 2)];
-  }
+  // Take the required amount
+  const selected = shuffledBank.slice(0, exerciseCount);
 
-  // If no matching exercises, fall back to all beginner pronunciation
-  if (filteredExercises.length === 0) {
-    filteredExercises = allExercises.filter(
-      ex => ex.difficulty === 'beginner' && ex.targetGoal === 'pronunciation'
-    );
-  }
-
-  // Calculate number of exercises based on duration (approximately 2 minutes per exercise)
-  const exerciseCount = Math.max(3, Math.ceil(sessionDurationMinutes / 2));
-
-  // Apply adaptive logic if data is available
-  if (adaptiveData) {
-    const { weakExercises, masteredExercises, weakPhonemes, weakSounds } = adaptiveData;
-    
-    // Prioritize: weak exercises > exercises with weak sounds > exercises with weak phonemes > new exercises > mastered (exclude)
-    const highPriorityExercises: Omit<Exercise, 'id'>[] = [];
-    const prioritizedExercises: Omit<Exercise, 'id'>[] = [];
-    const normalExercises: Omit<Exercise, 'id'>[] = [];
-    
-    filteredExercises.forEach(ex => {
-      // Skip mastered exercises (don't repeat too often)
-      if (masteredExercises.includes(ex.content)) {
-        // Include mastered only 20% of the time for variety
-        if (Math.random() > 0.2) return;
-      }
-      
-      // Highest priority: weak exercises from user history
-      if (weakExercises.includes(ex.content)) {
-        highPriorityExercises.push(ex);
-        return;
-      }
-      
-      // High priority: exercises containing weak sounds (from sound analysis)
-      if (weakSounds && containsWeakSound(ex.content, weakSounds)) {
-        prioritizedExercises.push(ex);
-        return;
-      }
-      
-      // Medium priority: exercises with weak phoneme patterns
-      if (matchesWeakPhoneme(ex.content, weakPhonemes)) {
-        prioritizedExercises.push(ex);
-        return;
-      }
-      
-      normalExercises.push(ex);
-    });
-    
-    // Shuffle within categories
-    const shuffledHighPriority = highPriorityExercises.sort(() => Math.random() - 0.5);
-    const shuffledPriority = prioritizedExercises.sort(() => Math.random() - 0.5);
-    const shuffledNormal = normalExercises.sort(() => Math.random() - 0.5);
-    
-    // Combine: highest priority first, then prioritized, then normal
-    filteredExercises = [...shuffledHighPriority, ...shuffledPriority, ...shuffledNormal];
-  } else {
-    // No adaptive data, just shuffle
-    filteredExercises = [...filteredExercises].sort(() => Math.random() - 0.5);
-  }
-
-  // Guarantee a more varied session: try to include words, sentences, and longer phrases.
-  const varietyOrder: Array<'word' | 'sentence' | 'long_phrase'> = ['word', 'sentence', 'long_phrase'];
-  const selectedVarietyExercises: Omit<Exercise, 'id'>[] = [];
-  const usedContents = new Set<string>();
-
-  varietyOrder.forEach((bucket) => {
-    const match = filteredExercises.find((exercise) => {
-      if (usedContents.has(exercise.content)) return false;
-      return getExerciseVarietyBucket(exercise) === bucket;
-    });
-
-    if (match) {
-      selectedVarietyExercises.push(match);
-      usedContents.add(match.content);
-    }
-  });
-
-  const remainingExercises = filteredExercises.filter(
-    (exercise) => !usedContents.has(exercise.content)
-  );
-
-  filteredExercises = [...selectedVarietyExercises, ...remainingExercises];
-  
-  // If we need more exercises than available, repeat some
-  while (filteredExercises.length < exerciseCount) {
-    const originalFiltered = allExercises.filter(ex => 
-      validDifficulties.includes(ex.difficulty) &&
-      (ex.targetGoal === selectedMode || userGoals.includes(ex.targetGoal))
-    );
-    filteredExercises.push(...originalFiltered.sort(() => Math.random() - 0.5));
-  }
-
-  // Select the required number
-  for (let i = 0; i < Math.min(exerciseCount, filteredExercises.length); i++) {
+  selected.forEach((ex, i) => {
     exercises.push({
-      ...filteredExercises[i],
+      ...ex,
       id: `exercise-${i}-${Date.now()}`,
     });
-  }
-
-  // Always start with a breathing exercise in fluency mode
-  if (selectedMode === 'fluency' && exercises.length > 0) {
-    const breathingExercise = allExercises.find(
-      ex => ex.type === 'breathing' && validDifficulties.includes(ex.difficulty)
-    );
-    if (breathingExercise && exercises[0].type !== 'breathing') {
-      exercises.unshift({
-        ...breathingExercise,
-        id: `breathing-start-${Date.now()}`,
-      });
-    }
-  }
+  });
 
   return exercises;
 };

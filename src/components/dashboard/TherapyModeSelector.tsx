@@ -11,10 +11,11 @@ import { motion } from 'framer-motion';
 interface TherapyModeSelectorProps {
   userId: string;
   currentMode: TherapyMode | null;
+  userGoals?: string[];
   onModeChange?: (mode: TherapyMode) => void;
 }
 
-export const TherapyModeSelector = ({ userId, currentMode, onModeChange }: TherapyModeSelectorProps) => {
+export const TherapyModeSelector = ({ userId, currentMode, userGoals = [], onModeChange }: TherapyModeSelectorProps) => {
   const [selectedMode, setSelectedMode] = useState<TherapyMode>(currentMode || 'pronunciation');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -58,7 +59,12 @@ export const TherapyModeSelector = ({ userId, currentMode, onModeChange }: Thera
     }
   };
 
-  const modes = Object.values(THERAPY_MODES);
+  const modes = Object.values(THERAPY_MODES).filter(mode => {
+    // If no goals selected (new user), show Pronunciation as default
+    if (!userGoals || userGoals.length === 0) return mode.id === 'pronunciation';
+    // Show every mode whose ID was selected as a goal in onboarding
+    return userGoals.includes(mode.id);
+  });
 
   return (
     <Card className="bg-card border-border shadow-card">
