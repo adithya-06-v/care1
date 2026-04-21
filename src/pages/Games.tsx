@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,12 +21,12 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const GAMES = [
@@ -52,14 +54,63 @@ const GAMES = [
 
 const Games = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
-  const [leaderboard, setLeaderboard] = useState([
-    { name: 'Dr. Priya Sharma', xp: 4500, rank: 1, avatar: 'P' },
-    { name: 'Dr. Rahul Mehta', xp: 3200, rank: 2, avatar: 'R' },
-    { name: 'Dr. Anjali Verma', xp: 2800, rank: 3, avatar: 'A' },
-    { name: 'You', xp: 1240, rank: 12, avatar: 'Y', isMe: true },
-    { name: 'Dr. Arjun Reddy', xp: 950, rank: 15, avatar: 'A' },
-  ]);
+  const [leaderboard, setLeaderboard] = useState<{name: string, xp: number, rank: number, avatar: string, isMe?: boolean}[]>([]);
+  const [userXP, setUserXP] = useState(0);
+  const [streak, setStreak] = useState(0);
+
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('full_name, therapy_sessions_completed, total_practice_minutes, user_id, current_streak')
+        .order('therapy_sessions_completed', { ascending: false });
+
+      if (data && !error) {
+        // Thorough list of names and titles to filter out
+        const blacklist = [
+          'Arjun Reddy', 'Kavita Nair', 'Anoymous user', 'chaitanya', 'satish', 
+          'Priya Sharma', 'Anjali Verma', 'Rahul Mehta', 'Anonymous User'
+        ].map(n => n.toLowerCase().trim());
+
+        const filtered = data.filter(profile => {
+          const name = (profile.full_name || '').toLowerCase().trim();
+          // Filter out anyone with "Dr." title or in the blacklist
+          const isTherapist = name.startsWith('dr.') || name.startsWith('dr ') || blacklist.some(b => name.includes(b));
+          return !isTherapist;
+        });
+
+        const processed = filtered.map((profile, index) => {
+          const calculatedXP = (profile.therapy_sessions_completed || 0) * 100 + (profile.total_practice_minutes || 0) * 10;
+          return {
+            name: profile.full_name || 'Anonymous User',
+            xp: calculatedXP,
+            rank: index + 1,
+            avatar: (profile.full_name || 'A')[0].toUpperCase(),
+            isMe: profile.user_id === user?.id
+          };
+        });
+        
+        // Sort by XP
+        processed.sort((a, b) => b.xp - a.xp);
+        // Re-assign ranks
+        const ranked = processed.map((p, i) => ({ ...p, rank: i + 1 }));
+        
+        setLeaderboard(ranked);
+
+        // Find current user's stats
+        const currentUser = data.find(p => p.user_id === user?.id);
+        if (currentUser) {
+          const currentXP = (currentUser.therapy_sessions_completed || 0) * 100 + (currentUser.total_practice_minutes || 0) * 10;
+          setUserXP(currentXP);
+          setStreak(currentUser.current_streak || 0);
+        }
+      }
+    };
+
+    fetchLeaderboard();
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
@@ -86,11 +137,11 @@ const Games = () => {
           <div className="flex items-center gap-4">
             <div className="bg-primary/10 rounded-full px-4 py-1.5 flex items-center gap-2 border border-primary/20">
               <Star className="w-4 h-4 text-primary fill-primary" />
-              <span className="font-bold text-primary">1,240 XP</span>
+              <span className="font-bold text-primary">{userXP.toLocaleString()} XP</span>
             </div>
             <div className="bg-orange-500/10 rounded-full px-4 py-1.5 flex items-center gap-2 border border-orange-500/20">
               <Flame className="w-4 h-4 text-orange-500" />
-              <span className="font-bold text-orange-500">5 Days</span>
+              <span className="font-bold text-orange-500">{streak} Days</span>
             </div>
           </div>
         </div>
@@ -142,29 +193,29 @@ const Games = () => {
                   </div>
                 </div>
 
-                {/* Horizontal Canyon Bridge Illustration */}
-                <div className="w-full mt-8 relative">
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent/5 to-accent/10 rounded-3xl -z-10" />
+                {/* Horizontal Canyon Bridge Illustration - Sized Down */}
+                <div className="w-full mt-4 relative">
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent/5 to-accent/10 rounded-2xl -z-10" />
                   
                   {/* Canyon Background Elements */}
-                  <div className="absolute left-0 bottom-0 w-32 h-32 bg-slate-800/20 rounded-tr-[100px] -z-5" />
-                  <div className="absolute right-0 bottom-0 w-32 h-32 bg-slate-800/20 rounded-tl-[100px] -z-5" />
+                  <div className="absolute left-0 bottom-0 w-24 h-24 bg-slate-800/20 rounded-tr-[80px] -z-5" />
+                  <div className="absolute right-0 bottom-0 w-24 h-24 bg-slate-800/20 rounded-tl-[80px] -z-5" />
                   
                   {/* The Horizontal Bridge */}
-                  <div className="relative h-48 w-full flex items-center justify-center px-12">
+                  <div className="relative h-32 w-full flex items-center justify-center px-8">
                     {/* Bridge Path (Horizontal) */}
-                    <div className="w-full h-8 bg-amber-950/20 rounded-full relative flex items-center justify-between px-8">
+                    <div className="w-full h-6 bg-amber-950/20 rounded-full relative flex items-center justify-between px-6">
                       {/* Wooden Planks Pattern */}
                       <div className="absolute inset-0 flex justify-around items-center px-4 overflow-hidden pointer-events-none opacity-40">
-                        {Array.from({ length: 20 }).map((_, i) => (
-                          <div key={i} className="w-2 h-full bg-amber-900 border-x border-amber-950/50" />
+                        {Array.from({ length: 15 }).map((_, i) => (
+                          <div key={i} className="w-1.5 h-full bg-amber-900 border-x border-amber-950/50" />
                         ))}
                       </div>
 
                       {[50, 100, 250].map((xp, i) => (
                         <div key={xp} className="relative z-10 flex flex-col items-center">
-                          <div className={`w-6 h-6 rounded-full border-4 border-card shadow-lg ${i === 0 ? 'bg-primary' : 'bg-muted'}`} />
-                          <div className="absolute top-8 bg-card border border-border px-3 py-1 rounded-full text-xs font-black text-primary shadow-sm whitespace-nowrap">
+                          <div className={`w-4 h-4 rounded-full border-2 border-card shadow-lg ${i === 0 ? 'bg-primary' : 'bg-muted'}`} />
+                          <div className="absolute top-6 bg-card border border-border px-2 py-0.5 rounded-full text-[10px] font-black text-primary shadow-sm whitespace-nowrap">
                             {xp} XP
                           </div>
                         </div>
@@ -172,17 +223,14 @@ const Games = () => {
                     </div>
 
                     {/* Armored Knight Hero */}
-                    <div className="absolute left-[15%] bottom-16 z-20 flex flex-col items-center">
+                    <div className="absolute left-[15%] bottom-10 z-20 flex flex-col items-center">
                       <div className="relative">
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-600 border-2 border-slate-900 flex items-center justify-center shadow-[0_0_20px_rgba(234,179,8,0.4)]">
-                          <User className="w-8 h-8 text-slate-900" />
-                          {/* Armor detailing */}
-                          <div className="absolute -top-1 -left-1 w-4 h-4 bg-yellow-300 rounded-sm rotate-45 border border-slate-900" />
-                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-300 rounded-sm -rotate-45 border border-slate-900" />
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-amber-600 border-2 border-slate-900 flex items-center justify-center shadow-[0_0_15px_rgba(234,179,8,0.3)]">
+                          <User className="w-6 h-6 text-slate-900" />
                         </div>
                       </div>
-                      <div className="mt-2 bg-slate-900 text-[10px] text-yellow-400 px-3 py-1 rounded-md font-black uppercase tracking-widest border border-yellow-500/30">
-                        Knight Hero
+                      <div className="mt-1 bg-slate-900 text-[8px] text-yellow-400 px-2 py-0.5 rounded-sm font-black uppercase tracking-widest border border-yellow-500/30">
+                        Knight
                       </div>
                     </div>
                   </div>
@@ -256,62 +304,73 @@ const Games = () => {
         </div>
       </main>
 
-      {/* Leaderboard Dialog */}
-      <Dialog open={isLeaderboardOpen} onOpenChange={setIsLeaderboardOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-card border-border">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-2xl font-bold">
+      {/* Leaderboard Slide-over */}
+      <Sheet open={isLeaderboardOpen} onOpenChange={setIsLeaderboardOpen}>
+        <SheetContent className="sm:max-w-[425px] bg-card border-l border-border p-0">
+          <SheetHeader className="p-6 border-b border-border">
+            <SheetTitle className="flex items-center gap-2 text-2xl font-bold">
               <Trophy className="w-6 h-6 text-yellow-500" />
               Leaderboard
-            </DialogTitle>
-            <DialogDescription>
+            </SheetTitle>
+            <SheetDescription>
               Compete with our experts and community to climb the ranks!
-            </DialogDescription>
-          </DialogHeader>
+            </SheetDescription>
+          </SheetHeader>
           
-          <div className="mt-6 space-y-4">
-            {leaderboard.map((entry) => (
-              <div 
-                key={entry.name}
-                className={`flex items-center gap-4 p-4 rounded-2xl transition-all ${
-                  entry.isMe 
-                    ? 'bg-primary/20 border-2 border-primary/30 shadow-[0_0_15px_rgba(var(--primary),0.2)]' 
-                    : 'bg-muted/30 border border-border/50 hover:bg-muted/50'
-                }`}
-              >
-                <div className={`w-8 font-black text-lg ${
-                  entry.rank <= 3 ? 'text-yellow-500' : 'text-muted-foreground'
-                }`}>
-                  #{entry.rank}
-                </div>
-                
-                <Avatar className="h-10 w-10 border-2 border-background shadow-sm">
-                  <AvatarFallback className={entry.isMe ? 'bg-primary text-primary-foreground' : 'bg-accent'}>
-                    {entry.avatar}
-                  </AvatarFallback>
-                </Avatar>
-                
-                <div className="flex-1 min-w-0">
-                  <p className={`font-bold truncate ${entry.isMe ? 'text-primary' : 'text-foreground'}`}>
-                    {entry.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                    Speech Master
-                  </p>
-                </div>
-                
-                <div className="text-right">
-                  <div className="flex items-center gap-1 font-black text-foreground">
-                    <Star className="w-3 h-3 text-primary fill-primary" />
-                    {entry.xp.toLocaleString()}
+          <div className="p-4 space-y-4 max-h-[calc(100vh-140px)] overflow-y-auto custom-scrollbar 
+            [&::-webkit-scrollbar]:w-1.5
+            [&::-webkit-scrollbar-track]:bg-transparent
+            [&::-webkit-scrollbar-thumb]:bg-primary/20
+            [&::-webkit-scrollbar-thumb]:rounded-full
+            hover:[&::-webkit-scrollbar-thumb]:bg-primary/40">
+            {leaderboard.length > 0 ? (
+              leaderboard.map((entry) => (
+                <div 
+                  key={entry.name}
+                  className={`flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 border ${
+                    entry.isMe 
+                      ? 'bg-primary/10 border-primary/40 shadow-[0_0_15px_rgba(var(--primary),0.1)] scale-[1.02] ring-1 ring-primary/20' 
+                      : 'bg-muted/30 border-border/50 hover:border-primary/30 hover:bg-muted/50 hover:shadow-md'
+                  }`}
+                >
+                  <div className={`w-10 flex justify-center font-black text-lg ${
+                    entry.rank <= 3 ? 'text-yellow-500' : 'text-muted-foreground'
+                  }`}>
+                    #{entry.rank}
                   </div>
-                  <div className="text-[10px] text-muted-foreground font-bold uppercase">XP</div>
+                  
+                  <Avatar className="h-10 w-10 border-2 border-background shadow-sm">
+                    <AvatarFallback className={entry.isMe ? 'bg-primary text-primary-foreground' : 'bg-accent'}>
+                      {entry.avatar}
+                    </AvatarFallback>
+                  </Avatar>
+                  
+                  <div className="flex-1 min-w-0">
+                    <p className={`font-bold truncate ${entry.isMe ? 'text-primary' : 'text-foreground'}`}>
+                      {entry.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
+                      Speech Master
+                    </p>
+                  </div>
+                  
+                  <div className="text-right">
+                    <div className="flex items-center gap-1 font-black text-foreground">
+                      <Star className="w-3 h-3 text-primary fill-primary" />
+                      {entry.xp.toLocaleString()}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground font-bold uppercase">XP</div>
+                  </div>
                 </div>
+              ))
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                No players found yet. Be the first!
               </div>
-            ))}
+            )}
           </div>
 
-          <div className="mt-6">
+          <div className="p-6 mt-auto border-t border-border">
             <Button 
               className="w-full h-12 rounded-xl font-bold"
               onClick={() => setIsLeaderboardOpen(false)}
@@ -319,8 +378,8 @@ const Games = () => {
               Continue Practice
             </Button>
           </div>
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
 
       {/* Footer Nav for Mobile (Optional) */}
       <div className="fixed bottom-0 left-0 right-0 bg-card/80 backdrop-blur-md border-t border-border p-4 flex justify-around md:hidden z-50">

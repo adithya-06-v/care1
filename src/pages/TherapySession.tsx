@@ -413,6 +413,39 @@ const TherapySession = () => {
       setUsingFallback(false);
       setDatasetSource("");
 
+      // Check for retry mode with stored weak words
+      if (sessionMode === "retry") {
+        const retryData = sessionStorage.getItem("retryExercises");
+        if (retryData) {
+          try {
+            const weakWords = JSON.parse(retryData) as string[];
+            if (weakWords.length > 0) {
+              const retryExercises: Exercise[] = weakWords.map((word, index) => ({
+                id: `retry-word-${index}-${Date.now()}`,
+                type: "word_repetition",
+                title: "Word Practice",
+                instruction: "Focus on the correct pronunciation of this word",
+                content: word,
+                difficulty: "beginner",
+                targetGoal: "pronunciation",
+              }));
+              
+              if (!cancelled) {
+                setExercises(retryExercises);
+                setDatasetSource("Session Storage (Retry)");
+                setIsDatasetLoading(false);
+                setIsLoading(false);
+                setCurrentExerciseIndex(0);
+                sessionStorage.removeItem("retryExercises");
+                return;
+              }
+            }
+          } catch (e) {
+            console.error("Error parsing retry exercises:", e);
+          }
+        }
+      }
+
       console.log(`Loading dataset: ${selectedLanguage}/${selectedMode}`);
       const result = await loadDataset(selectedLanguage, selectedMode);
 
@@ -443,7 +476,7 @@ const TherapySession = () => {
 
     loadAndGenerate();
     return () => { cancelled = true; };
-  }, [selectedLanguage, selectedMode, profile, duration, resetRecording]);
+  }, [selectedLanguage, selectedMode, profile, duration, resetRecording, sessionMode, preference]);
 
   useEffect(() => {
     if (isComplete || isPaused || timeRemaining <= 0 || showFeedback) return;
@@ -814,8 +847,16 @@ const TherapySession = () => {
 
     if (currentExerciseIndex < exercises.length - 1) {
       setCurrentExerciseIndex((prev) => prev + 1);
-    } else if (timeRemaining > 0) {
-      setCurrentExerciseIndex(0);
+    } else {
+      // If we finished all exercises, check if we should end the session
+      if (sessionMode === "retry" || sessionMode === "focused") {
+        handleSessionComplete();
+      } else if (timeRemaining > 0) {
+        // Loop back for normal sessions if time remains
+        setCurrentExerciseIndex(0);
+      } else {
+        handleSessionComplete();
+      }
     }
   };
 
@@ -835,8 +876,14 @@ const TherapySession = () => {
     // Skipping does NOT count as completed — only real attempts do
     if (currentExerciseIndex < exercises.length - 1) {
       setCurrentExerciseIndex((prev) => prev + 1);
-    } else if (timeRemaining > 0) {
-      setCurrentExerciseIndex(0);
+    } else {
+      if (sessionMode === "retry" || sessionMode === "focused") {
+        handleSessionComplete();
+      } else if (timeRemaining > 0) {
+        setCurrentExerciseIndex(0);
+      } else {
+        handleSessionComplete();
+      }
     }
     resetRecording();
   };
