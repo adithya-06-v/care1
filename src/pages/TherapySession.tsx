@@ -75,7 +75,7 @@ type SpeechRecognitionInstance = {
     resultIndex: number;
     results: {
       length: number;
-      [index: number]: { isFinal: boolean; [altIndex: number]: { transcript: string } };
+      [index: number]: { isFinal: boolean;[altIndex: number]: { transcript: string } };
     };
   }) => void) | null;
   onerror: ((event: { error: string }) => void) | null;
@@ -99,7 +99,6 @@ const TherapySession = () => {
   const duration = parseInt(searchParams.get("duration") || "10", 10);
   const sessionMode = searchParams.get("mode"); // 'focused' mode for sound-focused practice
   const preference = searchParams.get("preference") as 'word' | 'sentence' | null;
-  const [sessionLimitReached, setSessionLimitReached] = useState(false);
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -271,25 +270,7 @@ const TherapySession = () => {
     }
   }, [user, loading, navigate]);
 
-  // Check daily session limit for free users
-  useEffect(() => {
-    const checkSessionLimit = async () => {
-      if (!user || isPro || subscriptionLoading) return;
 
-      const today = new Date().toISOString().split("T")[0];
-      const { count, error } = await supabase
-        .from("sessions")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id)
-        .gte("created_at", `${today}T00:00:00.000Z`);
-
-      if (!error && count !== null && count >= 5) {
-        setSessionLimitReached(true);
-      }
-    };
-
-    checkSessionLimit();
-  }, [user, isPro, subscriptionLoading]);
 
   useEffect(() => {
     const fetchProfileAndGenerateExercises = async () => {
@@ -429,7 +410,7 @@ const TherapySession = () => {
                 difficulty: "beginner",
                 targetGoal: "pronunciation",
               }));
-              
+
               if (!cancelled) {
                 setExercises(retryExercises);
                 setDatasetSource("Session Storage (Retry)");
@@ -747,12 +728,11 @@ const TherapySession = () => {
       setAccuracyScores((prev) => [...prev, result.pronunciationScore]);
 
       console.log(
-        `Exercise saved: ${result.pronunciationScore}% - Emotion: ${emotionTag} - Status: ${
-          result.pronunciationScore > 85
-            ? "mastered"
-            : result.pronunciationScore >= 60
-              ? "learning"
-              : "weak"
+        `Exercise saved: ${result.pronunciationScore}% - Emotion: ${emotionTag} - Status: ${result.pronunciationScore > 85
+          ? "mastered"
+          : result.pronunciationScore >= 60
+            ? "learning"
+            : "weak"
         }`,
       );
     } catch (error) {
@@ -925,55 +905,7 @@ const TherapySession = () => {
     );
   }
 
-  // Show session limit reached screen for free users
-  if (sessionLimitReached && !isPro) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="max-w-md w-full bg-card border-border shadow-card">
-          <CardHeader className="text-center">
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-              <Clock className="w-8 h-8 text-primary" />
-            </div>
-            <CardTitle className="text-xl text-foreground">
-              Daily Limit Reached
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-center space-y-4">
-            <p className="text-muted-foreground">
-              You've completed 5 sessions today on the free plan. Upgrade to Pro
-              for unlimited sessions!
-            </p>
-            <div className="space-y-3">
-              <Button
-                onClick={async () => {
-                  try {
-                    await createCheckout();
-                  } catch (error) {
-                    toast({
-                      title: "Error",
-                      description:
-                        "Failed to start checkout. Please try again.",
-                      variant: "destructive",
-                    });
-                  }
-                }}
-                className="w-full rounded-pill shadow-button"
-              >
-                Upgrade to Pro — $20/mo
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => window.history.back()}
-                className="w-full"
-              >
-                Back
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+
 
   if (isComplete) {
     return (
@@ -1031,9 +963,7 @@ const TherapySession = () => {
 
       <main className="container mx-auto px-4 py-6 max-w-2xl">
         <div className="flex items-center justify-between mb-4">
-          <p className="text-sm text-muted-foreground">
-            Exercise {currentExerciseIndex + 1} of {exercises.length}
-          </p>
+
           <p className="text-sm text-muted-foreground">
             {exercisesCompleted} completed
           </p>

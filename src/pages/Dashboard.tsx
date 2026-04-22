@@ -346,9 +346,6 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 pb-16">
-        {/* Upgrade Banner for Free Users */}
-        {!isPro && <UpgradeBanner />}
-        
         {/* Welcome Section */}
         <div className="mb-8 flex items-center justify-between flex-wrap gap-4">
           <div>

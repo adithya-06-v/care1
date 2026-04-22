@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import { AlertCircle, RefreshCw, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 interface WeakWord {
   exercise_text: string;
@@ -20,6 +27,8 @@ export const MispronounedWords = ({ userId }: MispronounedWordsProps) => {
   const navigate = useNavigate();
   const [weakWords, setWeakWords] = useState<WeakWord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isViewAllOpen, setIsViewAllOpen] = useState(false);
+  const [allWeakWords, setAllWeakWords] = useState<WeakWord[]>([]);
 
   useEffect(() => {
     const fetchWeakWords = async () => {
@@ -63,7 +72,8 @@ export const MispronounedWords = ({ userId }: MispronounedWordsProps) => {
       // Sort by mispronunciation count (highest first)
       words.sort((a, b) => b.attempts - a.attempts);
       
-      // Top 5 most mispronounced
+      setAllWeakWords(words);
+      // Top 5 for dashboard preview
       setWeakWords(words.slice(0, 5));
       setIsLoading(false);
     };
@@ -101,6 +111,11 @@ export const MispronounedWords = ({ userId }: MispronounedWordsProps) => {
     navigate('/therapy-session?duration=5&mode=retry');
   };
 
+  const handlePracticeSingleWord = (word: string) => {
+    sessionStorage.setItem('retryExercises', JSON.stringify([word]));
+    navigate('/therapy-session?duration=5&mode=retry');
+  };
+
   if (isLoading) {
     return (
       <Card className="bg-card border-border shadow-card">
@@ -131,39 +146,107 @@ export const MispronounedWords = ({ userId }: MispronounedWordsProps) => {
   }
 
   return (
-    <Card className="bg-card border-border shadow-card">
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-foreground text-base">
-          <AlertCircle className="w-5 h-5 text-orange-500" />
-          Most Mispronounced Words
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="space-y-2">
-          {weakWords.map((word, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-between p-3 bg-orange-500/10 rounded-lg border border-orange-500/20"
+    <>
+      <Card className="bg-card border-border shadow-card">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-foreground text-base">
+              <AlertCircle className="w-5 h-5 text-orange-500" />
+              Most Mispronounced Words
+            </CardTitle>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 rounded-full text-muted-foreground hover:text-orange-600 hover:bg-orange-500/10"
+              onClick={() => setIsViewAllOpen(true)}
             >
-              <span className="text-sm text-foreground font-medium">
-                {word.exercise_text}
-              </span>
-              <span className="text-sm text-orange-600 font-medium">
-                {word.attempts} {word.attempts === 1 ? 'time' : 'times'}
-              </span>
-            </div>
-          ))}
-        </div>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={handlePracticeWeakWords}
-          className="w-full mt-2 border-orange-500/50 text-orange-600 hover:bg-orange-500/10"
-        >
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Practice These Words
-        </Button>
-      </CardContent>
-    </Card>
+              <ChevronRight className="w-5 h-5" />
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="space-y-2">
+            {weakWords.map((word, index) => (
+              <div
+                key={index}
+                onClick={() => handlePracticeSingleWord(word.exercise_text)}
+                className="group flex items-center justify-between p-4 bg-orange-500/5 rounded-2xl border border-orange-500/10 hover:bg-orange-500/10 transition-all cursor-pointer"
+              >
+                <div className="flex-1 min-w-0 mr-4">
+                  <span className="text-sm md:text-base text-foreground font-semibold block truncate">
+                    {word.exercise_text}
+                  </span>
+                  <span className="text-[10px] md:text-xs text-orange-600 font-black uppercase tracking-widest mt-1 block">
+                    {word.attempts} {word.attempts === 1 ? 'attempt' : 'attempts'}
+                  </span>
+                </div>
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center group-hover:bg-orange-500/20 transition-colors">
+                    <ChevronRight className="w-5 h-5 text-orange-600 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handlePracticeWeakWords}
+            className="w-full mt-2 border-orange-500/50 text-orange-600 hover:bg-orange-500/10 h-10 rounded-xl font-bold"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Practice Top Words
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* View All Dialog */}
+      <Dialog open={isViewAllOpen} onOpenChange={setIsViewAllOpen}>
+        <DialogContent className="sm:max-w-[500px] bg-card border-border p-0 overflow-hidden">
+          <DialogHeader className="p-6 bg-orange-500/5 border-b border-orange-500/10">
+            <DialogTitle className="flex items-center gap-2 text-xl font-bold">
+              <AlertCircle className="w-6 h-6 text-orange-500" />
+              All Weak Words
+            </DialogTitle>
+            <DialogDescription>
+              Complete history of words and sentences that need more practice.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="p-4 space-y-3 max-h-[60vh] overflow-y-auto custom-scrollbar">
+            {allWeakWords.map((word, index) => (
+              <div
+                key={index}
+                onClick={() => handlePracticeSingleWord(word.exercise_text)}
+                className="group flex items-center justify-between p-4 bg-orange-500/5 rounded-2xl border border-orange-500/10 hover:bg-orange-500/10 transition-all cursor-pointer"
+              >
+                <div className="flex-1 min-w-0 mr-4">
+                  <span className="text-sm md:text-base text-foreground font-semibold block">
+                    {word.exercise_text}
+                  </span>
+                  <span className="text-[10px] md:text-xs text-orange-600 font-black uppercase tracking-widest mt-1 block">
+                    {word.attempts} {word.attempts === 1 ? 'attempt' : 'attempts'}
+                  </span>
+                </div>
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center group-hover:bg-orange-500/20 transition-colors">
+                    <ChevronRight className="w-5 h-5 text-orange-600 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="p-6 mt-auto border-t border-border">
+            <Button 
+              className="w-full h-12 rounded-xl font-bold bg-orange-500 hover:bg-orange-600 text-white"
+              onClick={handlePracticeWeakWords}
+            >
+              Practice All Weak Words
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
